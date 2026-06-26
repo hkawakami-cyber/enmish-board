@@ -31,6 +31,7 @@ export default function FrameNode({ id, data, selected }: NodeProps) {
           placeholder="フレーム名"
           className="min-w-[60px] text-white"
           multiline={false}
+          primary
         />
       </div>
     </div>

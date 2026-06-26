@@ -20,6 +20,7 @@ export default function TextNode({ id, data, selected }: NodeProps) {
         value={(data.body as string) ?? ""}
         placeholder="テキストを入力（ダブルクリック）"
         className="flex-1 leading-relaxed text-slate-700"
+        primary
       />
     </div>
   );

@@ -41,11 +41,12 @@ export default function RightPanel() {
           <div>
             <p className="font-medium text-slate-600">使い方</p>
             <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-relaxed">
-              <li>左のツールからカードを追加</li>
+              <li>空白をダブルクリックで付箋を追加</li>
+              <li>議事メモを ⌘V で貼ると行ごとに付箋化</li>
               <li>カードをドラッグで移動</li>
               <li>ダブルクリックでテキスト編集</li>
+              <li>右クリックで複製・削除・前面/背面</li>
               <li>カードの端からドラッグで接続</li>
-              <li>カードを選択するとここで詳細を編集</li>
             </ul>
           </div>
         </div>

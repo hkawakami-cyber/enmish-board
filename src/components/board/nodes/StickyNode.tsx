@@ -20,6 +20,7 @@ export default function StickyNode({ id, data, selected }: NodeProps) {
         value={(data.title as string) ?? ""}
         placeholder="タイトル"
         className="font-semibold text-slate-800"
+        primary
       />
       <EditableText
         nodeId={id}

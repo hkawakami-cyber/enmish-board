@@ -22,6 +22,7 @@ import type {
   NodeType,
 } from "@/types/board";
 import { saveBoard } from "@/lib/storage";
+import { getViewportCenter } from "@/lib/canvasInstance";
 
 // --- ノード初期値 ----------------------------------------------------------
 
@@ -160,6 +161,9 @@ interface BoardState {
   edges: Edge[];
   selectedId: string | null;
 
+  /** 作成直後に本文編集へ入らせるためのノードID */
+  autoEditId: string | null;
+
   dirty: boolean;
   lastSavedAt: string | null;
 
@@ -185,7 +189,14 @@ interface BoardState {
   updateNodeData: (id: string, patch: Record<string, unknown>) => void;
   setNodeColor: (id: string, color: string) => void;
   deleteSelected: () => void;
+  deleteNode: (id: string) => void;
   duplicateSelected: () => void;
+  duplicateNode: (id: string) => void;
+  bringToFront: (id: string) => void;
+  sendToBack: (id: string) => void;
+  clearAutoEdit: () => void;
+  /** 改行区切りのテキストから複数の付箋を生成する */
+  pasteText: (text: string) => void;
 
   copySelected: () => void;
   pasteClipboard: () => void;
@@ -217,6 +228,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   nodes: [],
   edges: [],
   selectedId: null,
+  autoEditId: null,
 
   dirty: false,
   lastSavedAt: null,
@@ -237,6 +249,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       nodes: [...frameNodes, ...cardNodes],
       edges: board.edges.map(edgeToRf),
       selectedId: null,
+      autoEditId: null,
       dirty: false,
       lastSavedAt: board.updatedAt,
       past: [],
@@ -311,6 +324,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), node],
       selectedId: id,
+      autoEditId: id,
       dirty: true,
     });
   },
@@ -332,6 +346,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       nodes: [node, ...get().nodes.map((n) => ({ ...n, selected: false }))],
       selectedId: id,
+      autoEditId: id,
       dirty: true,
     });
   },
@@ -369,9 +384,24 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     });
   },
 
+  deleteNode: (id) => {
+    if (!get().nodes.some((n) => n.id === id)) return;
+    get().beginInteraction();
+    set({
+      nodes: get().nodes.filter((n) => n.id !== id),
+      edges: get().edges.filter((e) => e.source !== id && e.target !== id),
+      selectedId: get().selectedId === id ? null : get().selectedId,
+      dirty: true,
+    });
+  },
+
   duplicateSelected: () => {
     const sel = get().selectedId;
-    const target = get().nodes.find((n) => n.id === sel);
+    if (sel) get().duplicateNode(sel);
+  },
+
+  duplicateNode: (sourceId) => {
+    const target = get().nodes.find((n) => n.id === sourceId);
     if (!target) return;
     get().beginInteraction();
     const id = crypto.randomUUID();
@@ -384,6 +414,69 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), copy],
       selectedId: id,
+      dirty: true,
+    });
+  },
+
+  bringToFront: (id) => {
+    const node = get().nodes.find((n) => n.id === id);
+    if (!node) return;
+    get().beginInteraction();
+    const maxZ = Math.max(1, ...get().nodes.map((n) => (n.zIndex as number) ?? 0));
+    set({
+      nodes: [
+        ...get().nodes.filter((n) => n.id !== id),
+        { ...node, zIndex: maxZ + 1 },
+      ],
+      dirty: true,
+    });
+  },
+
+  sendToBack: (id) => {
+    const node = get().nodes.find((n) => n.id === id);
+    if (!node) return;
+    get().beginInteraction();
+    // フレームより前面は保ちつつ、カードの中では最背面へ
+    const z = node.type === "frame" ? -1 : 0;
+    set({
+      nodes: [{ ...node, zIndex: z }, ...get().nodes.filter((n) => n.id !== id)],
+      dirty: true,
+    });
+  },
+
+  clearAutoEdit: () => set({ autoEditId: null }),
+
+  pasteText: (text) => {
+    const lines = text
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter(Boolean);
+    if (lines.length === 0) return;
+    get().beginInteraction();
+    const base = getViewportCenter();
+    const W = 200;
+    const H = 140;
+    const GAP = 20;
+    const cols = Math.min(4, lines.length);
+    const startX = Math.round(base.x - (cols * (W + GAP)) / 2);
+    const startY = Math.round(base.y - 80);
+    const ts = new Date().toISOString();
+    const created: Node[] = lines.slice(0, 100).map((line, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      return {
+        id: crypto.randomUUID(),
+        type: "sticky",
+        position: { x: startX + col * (W + GAP), y: startY + row * (H + GAP) },
+        width: W,
+        height: H,
+        data: { title: "", body: line, color: "yellow", createdAt: ts },
+        zIndex: 1,
+      };
+    });
+    set({
+      nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), ...created],
+      selectedId: created.length === 1 ? created[0].id : null,
       dirty: true,
     });
   },

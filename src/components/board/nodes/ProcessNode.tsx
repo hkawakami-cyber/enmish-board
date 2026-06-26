@@ -34,6 +34,7 @@ export default function ProcessNode({ id, data, selected }: NodeProps) {
           placeholder="工程名"
           className="text-sm font-semibold text-slate-800"
           multiline={false}
+          primary
         />
         <Row label="担当" value={data.owner as string} />
         <Row label="入力" value={data.input as string} />

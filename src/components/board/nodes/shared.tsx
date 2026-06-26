@@ -47,15 +47,31 @@ interface EditableProps {
   placeholder?: string;
   className?: string;
   multiline?: boolean;
+  /** カードの主テキスト。作成直後はここが自動的に編集状態になる */
+  primary?: boolean;
 }
 
 /** ダブルクリックで編集に切り替わるテキスト */
-export function EditableText({ nodeId, field, value, placeholder, className, multiline = true }: EditableProps) {
+export function EditableText({ nodeId, field, value, placeholder, className, multiline = true, primary }: EditableProps) {
   const update = useBoardStore((s) => s.updateNodeData);
   const begin = useBoardStore((s) => s.beginInteraction);
+  const autoEdit = useBoardStore((s) => primary && s.autoEditId === nodeId);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
   const ref = useRef<HTMLTextAreaElement>(null);
+
+  // 作成直後（autoEditId が一致）なら自動で編集に入る
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (autoEdit) {
+      setDraft(value);
+      setEditing(true);
+      useBoardStore.getState().clearAutoEdit();
+    }
+    // value を依存に含めると入力途中で再発火するため意図的に除外
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoEdit]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (editing && ref.current) {

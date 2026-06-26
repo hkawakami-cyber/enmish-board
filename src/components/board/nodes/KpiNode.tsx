@@ -25,6 +25,7 @@ export default function KpiNode({ id, data, selected }: NodeProps) {
         placeholder="指標名"
         className="text-sm font-semibold text-slate-800"
         multiline={false}
+        primary
       />
       <div className="mt-1 flex items-baseline gap-1">
         <span className="text-xl font-bold text-slate-900">{value || "—"}</span>

@@ -47,6 +47,7 @@ export default function TaskNode({ id, data, selected }: NodeProps) {
         value={(data.title as string) ?? ""}
         placeholder="タスク名"
         className="mt-1.5 flex-1 text-sm font-semibold text-slate-800"
+        primary
       />
       <div className="mt-1 space-y-0.5 text-xs text-slate-500">
         {assignee && (

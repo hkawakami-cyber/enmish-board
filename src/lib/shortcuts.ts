@@ -50,13 +50,9 @@ export function useShortcuts() {
 
       if (isTyping(e.target)) return;
 
-      // コピー / ペースト
+      // コピー（ペーストは paste イベントで処理）
       if (mod && e.key.toLowerCase() === "c") {
         s.copySelected();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "v") {
-        s.pasteClipboard();
         return;
       }
 
@@ -87,7 +83,25 @@ export function useShortcuts() {
       }
     };
 
+    // ペースト：テキストがあれば付箋化、なければ内部クリップボードのカードを貼り付け
+    const onPaste = (e: ClipboardEvent) => {
+      if (isTyping(e.target)) return;
+      const text = e.clipboardData?.getData("text/plain") ?? "";
+      const s = useBoardStore.getState();
+      if (text.trim()) {
+        e.preventDefault();
+        s.pasteText(text);
+      } else {
+        e.preventDefault();
+        s.pasteClipboard();
+      }
+    };
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener("paste", onPaste);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("paste", onPaste);
+    };
   }, []);
 }
