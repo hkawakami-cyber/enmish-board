@@ -1,0 +1,461 @@
+"use client";
+
+// ボード編集画面の状態管理。React Flow のノード/エッジを単一の真実として保持し、
+// 保存時に Board 型へ変換する。UI からロジックを分離する。
+
+import { create } from "zustand";
+import {
+  applyNodeChanges,
+  applyEdgeChanges,
+  addEdge as rfAddEdge,
+  type Node,
+  type Edge,
+  type NodeChange,
+  type EdgeChange,
+  type Connection,
+} from "@xyflow/react";
+import type {
+  Board,
+  BoardEdge,
+  BoardFrame,
+  BoardNode,
+  NodeType,
+} from "@/types/board";
+import { saveBoard } from "@/lib/storage";
+
+// --- ノード初期値 ----------------------------------------------------------
+
+const DEFAULT_SIZE: Record<string, { width: number; height: number }> = {
+  sticky: { width: 200, height: 140 },
+  text: { width: 240, height: 120 },
+  process: { width: 220, height: 160 },
+  kpi: { width: 210, height: 140 },
+  task: { width: 220, height: 160 },
+  frame: { width: 380, height: 260 },
+};
+
+const DEFAULT_COLOR: Record<string, string> = {
+  sticky: "yellow",
+  text: "white",
+  process: "blue",
+  kpi: "green",
+  task: "purple",
+};
+
+function defaultData(type: NodeType): Record<string, unknown> {
+  switch (type) {
+    case "sticky":
+      return { title: "付箋", body: "" };
+    case "text":
+      return { body: "テキストを入力" };
+    case "process":
+      return { title: "プロセス", owner: "", input: "", output: "", issue: "", status: "" };
+    case "kpi":
+      return { name: "KPI", value: "", unit: "", formula: "", description: "" };
+    case "task":
+      return { title: "タスク", assignee: "", dueDate: "", status: "未着手", priority: "中", memo: "" };
+  }
+}
+
+// --- Board <-> React Flow 変換 ---------------------------------------------
+
+function nodeToRf(n: BoardNode): Node {
+  return {
+    id: n.id,
+    type: n.type,
+    position: n.position,
+    width: n.size.width,
+    height: n.size.height,
+    data: { ...n.data, color: n.style?.color, fontSize: n.style?.fontSize },
+    zIndex: 1,
+  };
+}
+
+function frameToRf(f: BoardFrame): Node {
+  return {
+    id: f.id,
+    type: "frame",
+    position: f.position,
+    width: f.size.width,
+    height: f.size.height,
+    data: { title: f.title, color: f.color },
+    zIndex: 0,
+  };
+}
+
+function edgeToRf(e: BoardEdge): Edge {
+  return {
+    id: e.id,
+    source: e.source,
+    target: e.target,
+    label: e.label,
+    type: "default",
+    markerEnd: e.type === "line" ? undefined : { type: "arrowclosed" as never },
+  };
+}
+
+function rfToBoardParts(nodes: Node[], edges: Edge[]) {
+  const now = new Date().toISOString();
+  const boardNodes: BoardNode[] = [];
+  const frames: BoardFrame[] = [];
+
+  for (const n of nodes) {
+    const size = { width: Math.round(n.width ?? n.measured?.width ?? 200), height: Math.round(n.height ?? n.measured?.height ?? 140) };
+    if (n.type === "frame") {
+      const { title, color } = n.data as { title?: string; color?: string };
+      frames.push({
+        id: n.id,
+        type: "frame",
+        title: title ?? "",
+        position: { x: Math.round(n.position.x), y: Math.round(n.position.y) },
+        size,
+        color,
+        createdAt: (n.data.createdAt as string) ?? now,
+        updatedAt: now,
+      });
+    } else {
+      const { color, fontSize, createdAt, ...data } = n.data as Record<string, unknown>;
+      boardNodes.push({
+        id: n.id,
+        type: n.type as NodeType,
+        position: { x: Math.round(n.position.x), y: Math.round(n.position.y) },
+        size,
+        data,
+        style: { color: color as string | undefined, fontSize: fontSize as number | undefined },
+        createdAt: (createdAt as string) ?? now,
+        updatedAt: now,
+      });
+    }
+  }
+
+  const boardEdges: BoardEdge[] = edges.map((e) => ({
+    id: e.id,
+    source: e.source,
+    target: e.target,
+    label: typeof e.label === "string" ? e.label : undefined,
+    type: e.markerEnd ? "arrow" : "line",
+    createdAt: now,
+  }));
+
+  return { nodes: boardNodes, edges: boardEdges, frames };
+}
+
+// --- ストア定義 ------------------------------------------------------------
+
+interface Snapshot {
+  nodes: Node[];
+  edges: Edge[];
+}
+
+interface BoardState {
+  // メタ
+  id: string;
+  title: string;
+  description?: string;
+  templateType?: string;
+  tags?: string[];
+  createdAt: string;
+
+  nodes: Node[];
+  edges: Edge[];
+  selectedId: string | null;
+
+  dirty: boolean;
+  lastSavedAt: string | null;
+
+  past: Snapshot[];
+  future: Snapshot[];
+
+  // ロード/保存
+  load: (board: Board) => void;
+  save: () => void;
+  setTitle: (title: string) => void;
+
+  // React Flow ハンドラ
+  onNodesChange: (changes: NodeChange[]) => void;
+  onEdgesChange: (changes: EdgeChange[]) => void;
+  onConnect: (c: Connection) => void;
+
+  // 選択
+  setSelected: (id: string | null) => void;
+
+  // ノード操作
+  addNode: (type: NodeType, position: { x: number; y: number }) => void;
+  addFrame: (position: { x: number; y: number }) => void;
+  updateNodeData: (id: string, patch: Record<string, unknown>) => void;
+  setNodeColor: (id: string, color: string) => void;
+  deleteSelected: () => void;
+  duplicateSelected: () => void;
+
+  copySelected: () => void;
+  pasteClipboard: () => void;
+
+  // 履歴
+  beginInteraction: () => void;
+  undo: () => void;
+  redo: () => void;
+
+  // ユーティリティ
+  serialize: () => Board;
+}
+
+function snapshot(s: { nodes: Node[]; edges: Edge[] }): Snapshot {
+  return { nodes: structuredClone(s.nodes), edges: structuredClone(s.edges) };
+}
+
+// コピー/ペースト用クリップボード（モジュールスコープ）
+let clipboard: Node | null = null;
+
+export const useBoardStore = create<BoardState>((set, get) => ({
+  id: "",
+  title: "",
+  description: undefined,
+  templateType: undefined,
+  tags: undefined,
+  createdAt: new Date().toISOString(),
+
+  nodes: [],
+  edges: [],
+  selectedId: null,
+
+  dirty: false,
+  lastSavedAt: null,
+
+  past: [],
+  future: [],
+
+  load: (board) => {
+    const frameNodes = board.frames.map(frameToRf);
+    const cardNodes = board.nodes.map(nodeToRf);
+    set({
+      id: board.id,
+      title: board.title,
+      description: board.description,
+      templateType: board.templateType,
+      tags: board.tags,
+      createdAt: board.createdAt,
+      nodes: [...frameNodes, ...cardNodes],
+      edges: board.edges.map(edgeToRf),
+      selectedId: null,
+      dirty: false,
+      lastSavedAt: board.updatedAt,
+      past: [],
+      future: [],
+    });
+  },
+
+  serialize: () => {
+    const s = get();
+    const parts = rfToBoardParts(s.nodes, s.edges);
+    return {
+      id: s.id,
+      title: s.title,
+      description: s.description,
+      templateType: s.templateType,
+      tags: s.tags,
+      nodes: parts.nodes,
+      edges: parts.edges,
+      frames: parts.frames,
+      createdAt: s.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+  },
+
+  save: () => {
+    const board = get().serialize();
+    saveBoard(board);
+    set({ dirty: false, lastSavedAt: board.updatedAt });
+  },
+
+  setTitle: (title) => set({ title, dirty: true }),
+
+  onNodesChange: (changes) => {
+    set({ nodes: applyNodeChanges(changes, get().nodes), dirty: true });
+    // 選択状態を同期
+    const sel = changes.find((c) => c.type === "select");
+    if (sel && "selected" in sel) {
+      set({ selectedId: sel.selected ? sel.id : get().selectedId === sel.id ? null : get().selectedId });
+    }
+  },
+
+  onEdgesChange: (changes) => {
+    set({ edges: applyEdgeChanges(changes, get().edges), dirty: true });
+  },
+
+  onConnect: (c) => {
+    get().beginInteraction();
+    set({
+      edges: rfAddEdge(
+        { ...c, type: "default", markerEnd: { type: "arrowclosed" as never } },
+        get().edges,
+      ),
+      dirty: true,
+    });
+  },
+
+  setSelected: (id) => set({ selectedId: id }),
+
+  addNode: (type, position) => {
+    get().beginInteraction();
+    const id = crypto.randomUUID();
+    const node: Node = {
+      id,
+      type,
+      position,
+      width: DEFAULT_SIZE[type].width,
+      height: DEFAULT_SIZE[type].height,
+      data: { ...defaultData(type), color: DEFAULT_COLOR[type], createdAt: new Date().toISOString() },
+      zIndex: 1,
+      selected: true,
+    };
+    set({
+      nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), node],
+      selectedId: id,
+      dirty: true,
+    });
+  },
+
+  addFrame: (position) => {
+    get().beginInteraction();
+    const id = crypto.randomUUID();
+    const node: Node = {
+      id,
+      type: "frame",
+      position,
+      width: DEFAULT_SIZE.frame.width,
+      height: DEFAULT_SIZE.frame.height,
+      data: { title: "フレーム", color: "slate", createdAt: new Date().toISOString() },
+      zIndex: 0,
+      selected: true,
+    };
+    // フレームは配列先頭側（背面）に置く
+    set({
+      nodes: [node, ...get().nodes.map((n) => ({ ...n, selected: false }))],
+      selectedId: id,
+      dirty: true,
+    });
+  },
+
+  updateNodeData: (id, patch) => {
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === id ? { ...n, data: { ...n.data, ...patch } } : n,
+      ),
+      dirty: true,
+    });
+  },
+
+  setNodeColor: (id, color) => {
+    get().beginInteraction();
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === id ? { ...n, data: { ...n.data, color } } : n,
+      ),
+      dirty: true,
+    });
+  },
+
+  deleteSelected: () => {
+    const sel = get().selectedId;
+    const selectedNodes = get().nodes.filter((n) => n.selected || n.id === sel);
+    if (selectedNodes.length === 0) return;
+    get().beginInteraction();
+    const ids = new Set(selectedNodes.map((n) => n.id));
+    set({
+      nodes: get().nodes.filter((n) => !ids.has(n.id)),
+      edges: get().edges.filter((e) => !ids.has(e.source) && !ids.has(e.target)),
+      selectedId: null,
+      dirty: true,
+    });
+  },
+
+  duplicateSelected: () => {
+    const sel = get().selectedId;
+    const target = get().nodes.find((n) => n.id === sel);
+    if (!target) return;
+    get().beginInteraction();
+    const id = crypto.randomUUID();
+    const copy: Node = {
+      ...structuredClone(target),
+      id,
+      position: { x: target.position.x + 32, y: target.position.y + 32 },
+      selected: true,
+    };
+    set({
+      nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), copy],
+      selectedId: id,
+      dirty: true,
+    });
+  },
+
+  copySelected: () => {
+    const node = get().nodes.find((n) => n.id === get().selectedId);
+    clipboard = node ? structuredClone(node) : null;
+  },
+
+  pasteClipboard: () => {
+    if (!clipboard) return;
+    get().beginInteraction();
+    const id = crypto.randomUUID();
+    const copy: Node = {
+      ...structuredClone(clipboard),
+      id,
+      position: { x: clipboard.position.x + 32, y: clipboard.position.y + 32 },
+      selected: true,
+    };
+    set({
+      nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), copy],
+      selectedId: id,
+      dirty: true,
+    });
+  },
+
+  beginInteraction: () => {
+    set({
+      past: [...get().past, snapshot(get())].slice(-50),
+      future: [],
+    });
+  },
+
+  undo: () => {
+    const { past } = get();
+    if (past.length === 0) return;
+    const prev = past[past.length - 1];
+    set({
+      nodes: prev.nodes,
+      edges: prev.edges,
+      past: past.slice(0, -1),
+      future: [snapshot(get()), ...get().future].slice(0, 50),
+      dirty: true,
+    });
+  },
+
+  redo: () => {
+    const { future } = get();
+    if (future.length === 0) return;
+    const next = future[0];
+    set({
+      nodes: next.nodes,
+      edges: next.edges,
+      future: future.slice(1),
+      past: [...get().past, snapshot(get())].slice(-50),
+      dirty: true,
+    });
+  },
+}));
+
+// テンプレート挿入用ヘルパー（既存ノードに追記する）
+export function insertTemplateNodes(boardNodes: BoardNode[], frames: BoardFrame[]) {
+  const store = useBoardStore.getState();
+  store.beginInteraction();
+  const newFrameNodes = frames.map(frameToRf);
+  const newCardNodes = boardNodes.map(nodeToRf);
+  useBoardStore.setState({
+    nodes: [
+      ...newFrameNodes,
+      ...store.nodes,
+      ...newCardNodes,
+    ],
+    dirty: true,
+  });
+}

@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@import "@xyflow/react/dist/style.css";
+
+:root {
+  --background: #f1f5f9;
+  --foreground: #0f172a;
+  --panel: #ffffff;
+  --border: #e2e8f0;
+  --accent: #1e293b;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans",
+    Meiryo, system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* スクロールバーを控えめに */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* React Flow のエッジ/ハンドルを業務向けに控えめにする */
+.react-flow__edge-path {
+  stroke: #64748b;
+  stroke-width: 1.5;
+}
+.react-flow__handle {
+  width: 9px;
+  height: 9px;
+  background: #475569;
+  border: 1.5px solid #ffffff;
+}
