@@ -217,6 +217,8 @@ interface BoardState {
   // ノード操作
   addNode: (type: NodeType, position: { x: number; y: number }) => void;
   addFrame: (position: { x: number; y: number }) => void;
+  /** スイムレーン（隣接する縦レーンのフレーム群）を挿入する */
+  addSwimlane: (lanes?: number) => void;
   updateNodeData: (id: string, patch: Record<string, unknown>) => void;
   setNodeColor: (id: string, color: string) => void;
   deleteSelected: () => void;
@@ -408,6 +410,30 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       nodes: [node, ...get().nodes.map((n) => ({ ...n, selected: false }))],
       selectedId: id,
       autoEditId: id,
+      dirty: true,
+    });
+  },
+
+  addSwimlane: (lanes = 4) => {
+    get().beginInteraction();
+    const ts = new Date().toISOString();
+    const base = getViewportCenter();
+    const W = 230;
+    const H = 540;
+    const startX = Math.round(base.x - (lanes * W) / 2);
+    const y = Math.round(base.y - H / 2);
+    const laneNodes: Node[] = Array.from({ length: lanes }, (_, i) => ({
+      id: crypto.randomUUID(),
+      type: "frame",
+      position: { x: startX + i * W, y },
+      width: W,
+      height: H,
+      data: { title: `レーン${i + 1}`, color: i % 2 === 0 ? "slate" : "blue", createdAt: ts },
+      zIndex: 0,
+    }));
+    set({
+      nodes: [...laneNodes, ...get().nodes.map((n) => ({ ...n, selected: false }))],
+      selectedId: null,
       dirty: true,
     });
   },

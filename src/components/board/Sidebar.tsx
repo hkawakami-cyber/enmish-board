@@ -13,6 +13,7 @@ import {
   Circle,
   Server,
   Database,
+  Columns3,
 } from "lucide-react";
 import type { NodeType } from "@/types/board";
 import { useBoardStore, insertTemplateNodes } from "@/stores/boardStore";
@@ -47,6 +48,7 @@ const FLOW_TOOLS: ToolItem[] = [
 export default function Sidebar() {
   const addNode = useBoardStore((s) => s.addNode);
   const addFrame = useBoardStore((s) => s.addFrame);
+  const addSwimlane = useBoardStore((s) => s.addSwimlane);
   const [showTemplate, setShowTemplate] = useState(false);
 
   const handleAdd = (type: NodeType | "frame") => {
@@ -88,6 +90,15 @@ export default function Sidebar() {
           <span className="text-[11px] font-medium">{t.label}</span>
         </button>
       ))}
+
+      <button
+        onClick={() => addSwimlane(4)}
+        className="group flex w-16 flex-col items-center gap-1 rounded-lg py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+        title="スイムレーン（4レーン）を挿入"
+      >
+        <Columns3 className="h-5 w-5" />
+        <span className="text-[11px] font-medium">レーン</span>
+      </button>
 
       <div className="my-1 h-px w-12 bg-border" />
 
