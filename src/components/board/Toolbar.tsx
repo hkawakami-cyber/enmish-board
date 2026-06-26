@@ -21,10 +21,12 @@ import {
   Workflow,
   Eye,
   EyeOff,
+  Sparkles,
 } from "lucide-react";
 import type { LayoutKind } from "@/lib/layout";
 import { useBoardStore } from "@/stores/boardStore";
 import ExportModal from "./ExportModal";
+import AIPanel from "./AIPanel";
 
 export default function Toolbar() {
   const { zoomIn, zoomOut, fitView } = useReactFlow();
@@ -43,6 +45,7 @@ export default function Toolbar() {
 
   const [showExport, setShowExport] = useState(false);
   const [showLayout, setShowLayout] = useState(false);
+  const [showAI, setShowAI] = useState(false);
 
   const runLayout = (kind: LayoutKind) => {
     autoLayout(kind);
@@ -163,6 +166,13 @@ export default function Toolbar() {
         <div className="mx-1 h-6 w-px bg-border" />
 
         <button
+          onClick={() => setShowAI(true)}
+          className="flex items-center gap-1.5 rounded-md border border-violet-200 bg-violet-50 px-3 py-1.5 text-sm font-medium text-violet-700 hover:bg-violet-100"
+        >
+          <Sparkles className="h-4 w-4" />
+          AI
+        </button>
+        <button
           onClick={() => setShowExport(true)}
           className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
@@ -179,6 +189,7 @@ export default function Toolbar() {
       </div>
 
       {showExport && <ExportModal onClose={() => setShowExport(false)} />}
+      {showAI && <AIPanel onClose={() => setShowAI(false)} />}
     </header>
   );
 }
