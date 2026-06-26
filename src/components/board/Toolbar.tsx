@@ -14,7 +14,15 @@ import {
   Download,
   Check,
   LayoutGrid,
+  Wand2,
+  ChevronDown,
+  Network,
+  GitBranch,
+  Workflow,
+  Eye,
+  EyeOff,
 } from "lucide-react";
+import type { LayoutKind } from "@/lib/layout";
 import { useBoardStore } from "@/stores/boardStore";
 import ExportModal from "./ExportModal";
 
@@ -29,8 +37,24 @@ export default function Toolbar() {
   const lastSavedAt = useBoardStore((s) => s.lastSavedAt);
   const canUndo = useBoardStore((s) => s.past.length > 0);
   const canRedo = useBoardStore((s) => s.future.length > 0);
+  const autoLayout = useBoardStore((s) => s.autoLayout);
+  const clientMode = useBoardStore((s) => s.clientMode);
+  const toggleClientMode = useBoardStore((s) => s.toggleClientMode);
 
   const [showExport, setShowExport] = useState(false);
+  const [showLayout, setShowLayout] = useState(false);
+
+  const runLayout = (kind: LayoutKind) => {
+    autoLayout(kind);
+    setShowLayout(false);
+    setTimeout(() => fitView({ padding: 0.3, duration: 400 }), 30);
+  };
+
+  const LAYOUTS: { kind: LayoutKind; label: string; desc: string; icon: React.ReactNode }[] = [
+    { kind: "mindmap", label: "マインドマップ", desc: "中心から枝を横展開", icon: <Network className="h-4 w-4" /> },
+    { kind: "tree", label: "ロジックツリー", desc: "論点・課題を横に分解", icon: <GitBranch className="h-4 w-4" /> },
+    { kind: "flow", label: "フロー図", desc: "上から下へ流れを整列", icon: <Workflow className="h-4 w-4" /> },
+  ];
 
   const iconBtn =
     "flex h-8 w-8 items-center justify-center rounded-md text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent";
@@ -82,6 +106,58 @@ export default function Toolbar() {
         </button>
         <button onClick={() => fitView({ padding: 0.3, duration: 300 })} className={iconBtn} title="表示リセット">
           <Maximize className="h-5 w-5" />
+        </button>
+
+        <div className="mx-1 h-6 w-px bg-border" />
+
+        {/* 図解に変換（オートレイアウト） */}
+        <div className="relative">
+          <button
+            onClick={() => setShowLayout((v) => !v)}
+            className="flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            title="付箋を図解に整える（選択中なら選択分のみ）"
+          >
+            <Wand2 className="h-4 w-4" />
+            図解に変換
+            <ChevronDown className="h-3.5 w-3.5" />
+          </button>
+          {showLayout && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setShowLayout(false)} />
+              <div className="absolute right-0 z-40 mt-1 w-60 rounded-lg border border-border bg-white p-1 shadow-lg">
+                <p className="px-2.5 py-1.5 text-[11px] text-slate-400">
+                  カードをエッジでつないでから実行すると、その親子構造で整列します
+                </p>
+                {LAYOUTS.map((l) => (
+                  <button
+                    key={l.kind}
+                    onClick={() => runLayout(l.kind)}
+                    className="flex w-full items-start gap-2.5 rounded-md px-2.5 py-2 text-left hover:bg-slate-100"
+                  >
+                    <span className="mt-0.5 text-slate-500">{l.icon}</span>
+                    <span>
+                      <span className="block text-sm font-medium text-slate-800">{l.label}</span>
+                      <span className="block text-xs text-slate-500">{l.desc}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* 顧客共有モード */}
+        <button
+          onClick={toggleClientMode}
+          className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium ${
+            clientMode
+              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+              : "border-border text-slate-700 hover:bg-slate-50"
+          }`}
+          title="内部メモを隠して顧客に共有できる表示に切り替え"
+        >
+          {clientMode ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          {clientMode ? "顧客共有" : "社内"}
         </button>
 
         <div className="mx-1 h-6 w-px bg-border" />

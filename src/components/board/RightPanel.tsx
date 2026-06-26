@@ -1,8 +1,9 @@
 "use client";
 
-import { Trash2, Copy, Info } from "lucide-react";
+import { Trash2, Copy, Info, EyeOff } from "lucide-react";
 import { useBoardStore } from "@/stores/boardStore";
 import { COLOR_LIST, FRAME_COLORS } from "@/lib/colors";
+import { CATEGORIES, getCategory } from "@/lib/categories";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -58,6 +59,14 @@ export default function RightPanel() {
   const data = node.data as Record<string, unknown>;
   const val = (k: string) => (data[k] as string) ?? "";
   const set = (k: string, v: string) => update(node.id, { [k]: v });
+
+  // カテゴリ選択時は対応する色も自動適用する
+  const setCategory = (key: string) => {
+    set("category", key);
+    const def = getCategory(key);
+    if (def) setColor(node.id, def.color);
+  };
+  const isInternal = Boolean(data.isInternal);
 
   return (
     <aside className="flex w-72 shrink-0 flex-col border-l border-border bg-panel">
@@ -147,6 +156,33 @@ export default function RightPanel() {
               {[12, 14, 16, 18, 20, 24].map((s) => <option key={s} value={s}>{s}px</option>)}
             </select>
           </Field>
+        )}
+
+        {/* MTG構造化（分類・発言者・内部メモ） */}
+        {type !== "frame" && (
+          <div className="space-y-3 rounded-lg bg-slate-50 p-3">
+            <Field label="分類">
+              <select className={inputCls} value={val("category")} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">未分類</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c.key} value={c.key}>{c.label}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="発言者">
+              <input className={inputCls} value={val("speaker")} onChange={(e) => set("speaker", e.target.value)} placeholder="顧客A / 自社 など" />
+            </Field>
+            <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700">
+              <input
+                type="checkbox"
+                checked={isInternal}
+                onChange={(e) => update(node.id, { isInternal: e.target.checked })}
+                className="h-4 w-4 rounded border-slate-300"
+              />
+              <EyeOff className="h-3.5 w-3.5 text-slate-400" />
+              内部メモ（顧客共有モードで非表示）
+            </label>
+          </div>
         )}
 
         {/* 色 */}

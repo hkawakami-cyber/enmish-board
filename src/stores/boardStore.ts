@@ -23,6 +23,7 @@ import type {
 } from "@/types/board";
 import { saveBoard } from "@/lib/storage";
 import { getViewportCenter } from "@/lib/canvasInstance";
+import { computeLayout, type LayoutKind } from "@/lib/layout";
 
 // --- ノード初期値 ----------------------------------------------------------
 
@@ -164,6 +165,9 @@ interface BoardState {
   /** 作成直後に本文編集へ入らせるためのノードID */
   autoEditId: string | null;
 
+  /** 顧客共有モード（内部メモを隠す） */
+  clientMode: boolean;
+
   dirty: boolean;
   lastSavedAt: string | null;
 
@@ -195,6 +199,9 @@ interface BoardState {
   bringToFront: (id: string) => void;
   sendToBack: (id: string) => void;
   clearAutoEdit: () => void;
+  toggleClientMode: () => void;
+  /** 選択ノード（2つ以上）または全体を図解配置に整える */
+  autoLayout: (kind: LayoutKind) => void;
   /** 改行区切りのテキストから複数の付箋を生成する */
   pasteText: (text: string) => void;
 
@@ -229,6 +236,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   edges: [],
   selectedId: null,
   autoEditId: null,
+  clientMode: false,
 
   dirty: false,
   lastSavedAt: null,
@@ -250,6 +258,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       edges: board.edges.map(edgeToRf),
       selectedId: null,
       autoEditId: null,
+      clientMode: false,
       dirty: false,
       lastSavedAt: board.updatedAt,
       past: [],
@@ -446,6 +455,20 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   clearAutoEdit: () => set({ autoEditId: null }),
 
+  toggleClientMode: () => set({ clientMode: !get().clientMode }),
+
+  autoLayout: (kind) => {
+    const selected = get().nodes.filter((n) => n.selected && n.type !== "frame");
+    const subset = selected.length >= 2 ? new Set(selected.map((n) => n.id)) : null;
+    const pos = computeLayout(get().nodes, get().edges, kind, subset);
+    if (Object.keys(pos).length === 0) return;
+    get().beginInteraction();
+    set({
+      nodes: get().nodes.map((n) => (pos[n.id] ? { ...n, position: pos[n.id] } : n)),
+      dirty: true,
+    });
+  },
+
   pasteText: (text) => {
     const lines = text
       .split(/\r?\n/)
@@ -470,7 +493,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         position: { x: startX + col * (W + GAP), y: startY + row * (H + GAP) },
         width: W,
         height: H,
-        data: { title: "", body: line, color: "yellow", createdAt: ts },
+        data: { title: line, body: "", color: "yellow", createdAt: ts },
         zIndex: 1,
       };
     });

@@ -9,16 +9,28 @@ export interface TemplateDef {
   description: string;
   /** ボード新規作成時のデフォルトタイトル */
   defaultTitle: string;
+  /** 用途カテゴリ（営業支援 / Salesforce / SIer / 共通） */
+  group?: string;
 }
 
 export const TEMPLATES: TemplateDef[] = [
-  { id: "sales-process", name: "営業プロセス整理", description: "リード獲得から受注・追客までの工程を整理する", defaultTitle: "営業プロセス整理" },
-  { id: "call-branch", name: "架電結果分岐", description: "架電結果の分岐と追客優先度を整理する", defaultTitle: "架電結果分岐整理" },
-  { id: "hearing", name: "顧客ヒアリング", description: "事業概要・課題・理想状態・宿題を整理する", defaultTitle: "顧客ヒアリング整理" },
-  { id: "kpi-tree", name: "KPIツリー", description: "KGIから活動指標・改善レバーまで分解する", defaultTitle: "KPIツリー設計" },
-  { id: "poc", name: "PoC設計", description: "目的・仮説・対象・成功条件を設計する", defaultTitle: "PoC設計" },
-  { id: "issue-action", name: "課題・施策整理", description: "現状・課題・施策・To-Beを結びつける", defaultTitle: "課題・施策整理" },
-  { id: "minutes", name: "議事録整理", description: "決定事項・論点・宿題を構造化する", defaultTitle: "議事録整理" },
+  // 営業支援
+  { id: "sales-hearing", name: "営業支援 初回ヒアリング", description: "商材理解〜KPI・宿題・提案論点まで一枚で", defaultTitle: "初回ヒアリング", group: "営業支援" },
+  { id: "sales-process", name: "営業プロセス整理", description: "リード獲得から受注・追客までの工程を整理", defaultTitle: "営業プロセス整理", group: "営業支援" },
+  { id: "call-branch", name: "架電結果分岐", description: "架電結果の分岐と追客優先度を整理", defaultTitle: "架電結果分岐整理", group: "営業支援" },
+  { id: "target-design", name: "ターゲット設計", description: "業界・規模・部署・役職・課題仮説・訴求軸", defaultTitle: "ターゲット設計", group: "営業支援" },
+  { id: "kpi-tree", name: "KPIツリー", description: "KGIから活動指標・改善レバーまで分解", defaultTitle: "KPIツリー設計", group: "営業支援" },
+  // Salesforce
+  { id: "sfdc-requirements", name: "Salesforce 要件整理", description: "As-Is/To-Be・オブジェクト・項目・権限・レポート", defaultTitle: "Salesforce要件整理", group: "Salesforce" },
+  // SIer
+  { id: "sier-process", name: "SIer 業務整理", description: "業務フロー・システム・課題・スコープ・見積前提", defaultTitle: "SIer業務整理", group: "SIer" },
+  // 共通
+  { id: "hearing", name: "顧客ヒアリング", description: "事業概要・課題・理想状態・宿題を整理", defaultTitle: "顧客ヒアリング整理", group: "共通" },
+  { id: "issue-action", name: "課題・施策整理", description: "現状・課題・施策・To-Beを結びつける", defaultTitle: "課題・施策整理", group: "共通" },
+  { id: "poc", name: "PoC設計", description: "目的・仮説・対象・成功条件を設計", defaultTitle: "PoC設計", group: "共通" },
+  { id: "regular", name: "定例MTG", description: "前回宿題・進捗・課題・数値・意思決定・次回宿題", defaultTitle: "定例MTG", group: "共通" },
+  { id: "retro", name: "振り返り", description: "目標・実績・差分・原因・改善施策・次回", defaultTitle: "振り返り", group: "共通" },
+  { id: "minutes", name: "議事録整理", description: "決定事項・論点・宿題を構造化", defaultTitle: "議事録整理", group: "共通" },
 ];
 
 // --- 内部ビルダー ----------------------------------------------------------
@@ -102,6 +114,30 @@ function build(frames: FrameSeed[], origin = { x: 80, y: 80 }) {
   }
 
   return { nodes: outNodes, frames: outFrames };
+}
+
+/** 見出し付きの空フレームをグリッド配置する（エリア型テンプレート用） */
+function buildAreas(titles: string[], cols = 3, color = "slate") {
+  const ts = now();
+  const AW = 300;
+  const AH = 220;
+  const AGAP = 32;
+  const origin = { x: 80, y: 80 };
+  const frames: BoardFrame[] = titles.map((title, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    return {
+      id: uid(),
+      type: "frame",
+      title,
+      position: { x: origin.x + col * (AW + AGAP), y: origin.y + row * (AH + AGAP) },
+      size: { width: AW, height: AH },
+      color,
+      createdAt: ts,
+      updatedAt: ts,
+    };
+  });
+  return { nodes: [] as BoardNode[], frames };
 }
 
 function process(title: string, fields?: Partial<Record<string, string>>): NodeSeed {
@@ -325,13 +361,50 @@ function tplMinutes() {
   ]);
 }
 
+// エリア型テンプレート（section 10）
+const tplSalesHearing = () =>
+  buildAreas(
+    ["商材理解", "受注実績", "ターゲット仮説", "課題仮説", "訴求軸", "営業プロセス", "KPI設計", "除外条件", "宿題", "提案に反映する論点"],
+    4,
+    "blue",
+  );
+
+const tplSfdcRequirements = () =>
+  buildAreas(
+    ["現状業務", "As-Isフロー", "To-Beフロー", "オブジェクト候補", "項目要件", "権限要件", "自動化要件", "レポート要件", "連携要件", "未決事項"],
+    4,
+    "purple",
+  );
+
+const tplSierProcess = () =>
+  buildAreas(
+    ["業務全体像", "関係部署", "現行業務フロー", "利用システム", "データ連携", "課題箇所", "改善方針", "スコープ", "リスク", "見積前提"],
+    4,
+    "slate",
+  );
+
+const tplTargetDesign = () =>
+  buildAreas(["業界", "企業規模", "部署", "役職", "課題仮説", "訴求軸", "除外条件"], 4, "green");
+
+const tplRegular = () =>
+  buildAreas(["前回宿題", "進捗", "課題", "数値", "論点", "意思決定事項", "次回宿題"], 4, "blue");
+
+const tplRetro = () =>
+  buildAreas(["目標", "実績", "差分", "良かったこと", "課題", "原因", "改善施策", "次回アクション"], 4, "amber");
+
 const BUILDERS: Record<string, () => { nodes: BoardNode[]; frames: BoardFrame[] }> = {
+  "sales-hearing": tplSalesHearing,
   "sales-process": tplSalesProcess,
   "call-branch": tplCallBranch,
-  hearing: tplHearing,
+  "target-design": tplTargetDesign,
   "kpi-tree": tplKpiTree,
-  poc: tplPoc,
+  "sfdc-requirements": tplSfdcRequirements,
+  "sier-process": tplSierProcess,
+  hearing: tplHearing,
   "issue-action": tplIssueAction,
+  poc: tplPoc,
+  regular: tplRegular,
+  retro: tplRetro,
   minutes: tplMinutes,
 };
 

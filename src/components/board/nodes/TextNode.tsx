@@ -2,7 +2,7 @@
 
 import { type NodeProps } from "@xyflow/react";
 import { resolveColor } from "@/lib/colors";
-import { EditableText, NodeHandles, Resizer } from "./shared";
+import { EditableText, NodeHandles, NodeMeta, Resizer } from "./shared";
 
 export default function TextNode({ id, data, selected }: NodeProps) {
   const c = resolveColor((data.color as string) ?? "white");
@@ -14,6 +14,7 @@ export default function TextNode({ id, data, selected }: NodeProps) {
     >
       <Resizer selected={selected} minHeight={60} />
       <NodeHandles />
+      <NodeMeta data={data as Record<string, unknown>} />
       <EditableText
         nodeId={id}
         field="body"

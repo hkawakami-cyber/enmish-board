@@ -59,6 +59,16 @@ export interface NodeData {
   // process / task 共通
   status?: string;
 
+  // MTG構造化用
+  /** 背景/現状/課題/要望/制約/決定事項/宿題/未決事項/提案論点 */
+  category?: string;
+  /** 発言者（顧客A・自社 など） */
+  speaker?: string;
+  /** 内部メモ（顧客共有モードでは非表示） */
+  isInternal?: boolean;
+  /** 手入力 / 文字起こし / AI生成 */
+  source?: string;
+
   [key: string]: unknown;
 }
 

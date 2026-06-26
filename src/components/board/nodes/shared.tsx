@@ -4,7 +4,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Handle, Position, NodeResizer } from "@xyflow/react";
+import { EyeOff } from "lucide-react";
 import { useBoardStore } from "@/stores/boardStore";
+import { getCategory } from "@/lib/categories";
 
 const HANDLE_POSITIONS = [Position.Top, Position.Right, Position.Bottom, Position.Left];
 
@@ -37,6 +39,21 @@ export function Resizer({ selected, minWidth = 140, minHeight = 80 }: { selected
       lineStyle={{ borderColor: "#94a3b8" }}
       onResizeStart={() => begin()}
     />
+  );
+}
+
+/** カードに分類バッジ・発言者・内部メモ印を表示する */
+export function NodeMeta({ data }: { data: Record<string, unknown> }) {
+  const cat = getCategory(data.category as string);
+  const speaker = data.speaker as string | undefined;
+  const internal = Boolean(data.isInternal);
+  if (!cat && !speaker && !internal) return null;
+  return (
+    <div className="mb-1 flex flex-wrap items-center gap-1">
+      {cat && <span className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${cat.badge}`}>{cat.label}</span>}
+      {speaker && <span className="rounded bg-white/70 px-1.5 py-0.5 text-[10px] text-slate-500">{speaker}</span>}
+      {internal && <EyeOff className="h-3 w-3 text-slate-400" aria-label="内部メモ" />}
+    </div>
   );
 }
 

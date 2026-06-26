@@ -44,7 +44,19 @@ const MINIMAP_COLOR: Record<string, string> = {
 export default function BoardCanvas() {
   const nodes = useBoardStore((s) => s.nodes);
   const edges = useBoardStore((s) => s.edges);
+  const clientMode = useBoardStore((s) => s.clientMode);
   const isEmpty = useBoardStore((s) => s.nodes.length === 0);
+
+  // 顧客共有モードでは内部メモのノード・関連エッジを隠す
+  const viewNodes = useMemo(
+    () => (clientMode ? nodes.filter((n) => !n.data?.isInternal) : nodes),
+    [nodes, clientMode],
+  );
+  const viewEdges = useMemo(() => {
+    if (!clientMode) return edges;
+    const visible = new Set(viewNodes.map((n) => n.id));
+    return edges.filter((e) => visible.has(e.source) && visible.has(e.target));
+  }, [edges, clientMode, viewNodes]);
   const onNodesChange = useBoardStore((s) => s.onNodesChange);
   const onEdgesChange = useBoardStore((s) => s.onEdgesChange);
   const onConnect = useBoardStore((s) => s.onConnect);
@@ -71,8 +83,8 @@ export default function BoardCanvas() {
   return (
     <div className="relative h-full w-full" onDoubleClick={handleDoubleClick}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={viewNodes}
+        edges={viewEdges}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}

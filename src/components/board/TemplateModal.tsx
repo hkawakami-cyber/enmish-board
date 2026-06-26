@@ -3,6 +3,8 @@
 import { X } from "lucide-react";
 import { TEMPLATES } from "@/lib/templates";
 
+const GROUPS = ["営業支援", "Salesforce", "SIer", "共通"];
+
 interface Props {
   title?: string;
   description?: string;
@@ -38,17 +40,28 @@ export default function TemplateModal({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="grid max-h-[60vh] gap-3 overflow-y-auto p-6 sm:grid-cols-2">
-          {TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => onSelect(t.id)}
-              className="rounded-xl border border-border p-4 text-left transition hover:border-slate-400 hover:bg-slate-50"
-            >
-              <div className="font-semibold text-slate-900">{t.name}</div>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{t.description}</p>
-            </button>
-          ))}
+        <div className="max-h-[62vh] space-y-5 overflow-y-auto p-6">
+          {GROUPS.map((g) => {
+            const items = TEMPLATES.filter((t) => (t.group ?? "共通") === g);
+            if (items.length === 0) return null;
+            return (
+              <div key={g}>
+                <h3 className="mb-2 text-xs font-bold tracking-wide text-slate-400">{g}</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {items.map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onSelect(t.id)}
+                      className="rounded-xl border border-border p-4 text-left transition hover:border-slate-400 hover:bg-slate-50"
+                    >
+                      <div className="font-semibold text-slate-900">{t.name}</div>
+                      <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{t.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
