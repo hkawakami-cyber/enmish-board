@@ -23,6 +23,8 @@ import TaskNode from "./nodes/TaskNode";
 import FrameNode from "./nodes/FrameNode";
 import DecisionNode from "./nodes/DecisionNode";
 import TerminalNode from "./nodes/TerminalNode";
+import SystemNode from "./nodes/SystemNode";
+import ObjectNode from "./nodes/ObjectNode";
 import ContextMenu, { type MenuState } from "./ContextMenu";
 
 const nodeTypes: NodeTypes = {
@@ -33,6 +35,8 @@ const nodeTypes: NodeTypes = {
   task: TaskNode,
   decision: DecisionNode,
   terminal: TerminalNode,
+  system: SystemNode,
+  object: ObjectNode,
   frame: FrameNode,
 };
 
@@ -45,6 +49,8 @@ const MINIMAP_COLOR: Record<string, string> = {
   sticky: "#fde047",
   decision: "#fde047",
   terminal: "#94a3b8",
+  system: "#60a5fa",
+  object: "#a78bfa",
 };
 
 export default function BoardCanvas() {

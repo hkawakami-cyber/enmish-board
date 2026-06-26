@@ -54,6 +54,14 @@ function nodeToBullet(n: BoardNode): string {
       return `- ◇ ${str(d.title) || "分岐"}`;
     case "terminal":
       return `- ● ${str(d.title) || "開始/終了"}`;
+    case "system": {
+      const sub = str(d.subtitle);
+      return `- 🖥 **${str(d.title) || "システム"}**${sub ? `（${sub}）` : ""}`;
+    }
+    case "object": {
+      const fields = Array.isArray(d.fields) ? d.fields : [];
+      return `- 📦 **${str(d.name) || "オブジェクト"}**（${fields.length}項目）`;
+    }
     default:
       return "";
   }

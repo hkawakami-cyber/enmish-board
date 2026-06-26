@@ -35,6 +35,8 @@ const DEFAULT_SIZE: Record<string, { width: number; height: number }> = {
   task: { width: 220, height: 160 },
   decision: { width: 170, height: 110 },
   terminal: { width: 150, height: 56 },
+  system: { width: 200, height: 92 },
+  object: { width: 230, height: 200 },
   frame: { width: 380, height: 260 },
 };
 
@@ -46,6 +48,8 @@ const DEFAULT_COLOR: Record<string, string> = {
   task: "purple",
   decision: "yellow",
   terminal: "gray",
+  system: "blue",
+  object: "purple",
 };
 
 function defaultData(type: NodeType): Record<string, unknown> {
@@ -64,6 +68,16 @@ function defaultData(type: NodeType): Record<string, unknown> {
       return { title: "分岐？" };
     case "terminal":
       return { title: "開始" };
+    case "system":
+      return { title: "システム", subtitle: "" };
+    case "object":
+      return {
+        name: "オブジェクト",
+        fields: [
+          { name: "Name", type: "テキスト", required: true },
+          { name: "", type: "テキスト", required: false },
+        ],
+      };
   }
 }
 

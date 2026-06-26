@@ -8,7 +8,16 @@ export type NodeType =
   | "kpi"
   | "task"
   | "decision"
-  | "terminal";
+  | "terminal"
+  | "system"
+  | "object";
+
+/** ER/オブジェクト図の項目 */
+export interface ObjectField {
+  name: string;
+  type: string; // テキスト / 数値 / 日付 / 選択リスト / 参照関係 / 主従関係 / チェックボックス など
+  required?: boolean;
+}
 
 export type TaskStatus = "未着手" | "進行中" | "完了" | "保留";
 export type Priority = "高" | "中" | "低";

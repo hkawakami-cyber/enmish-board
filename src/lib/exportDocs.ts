@@ -1,7 +1,7 @@
 // 分類(category)を活用した構造化ドキュメント出力。
 // AI を使わないルールベース版。将来 AI 生成に差し替え可能な形にしておく。
 
-import type { Board, BoardNode } from "@/types/board";
+import type { Board, BoardNode, ObjectField } from "@/types/board";
 import { downloadText, safeFileName } from "./download";
 
 function str(v: unknown): string {
@@ -28,7 +28,11 @@ function nodeText(n: BoardNode): string {
     case "task":
     case "decision":
     case "terminal":
+    case "system":
       body = str(d.title);
+      break;
+    case "object":
+      body = str(d.name);
       break;
   }
   const sp = str(d.speaker);
@@ -135,6 +139,39 @@ export function boardToProposal(board: Board): string {
   section("期待効果");
   section("未決事項・確認事項", "未決事項");
   return L.join("\n");
+}
+
+/** 項目定義書（オブジェクトノードの項目一覧を表に） */
+export function boardToFieldSpec(board: Board): string {
+  const objects = board.nodes.filter((n) => n.type === "object");
+  const L: string[] = [];
+  L.push(`# 項目定義書：${board.title}`);
+  if (objects.length === 0) {
+    L.push("");
+    L.push("_オブジェクトがありません。サイドバーの「オブジェクト」で追加してください。_");
+    return L.join("\n");
+  }
+  for (const o of objects) {
+    const fields = (o.data.fields as ObjectField[] | undefined) ?? [];
+    L.push("");
+    L.push(`## ${str(o.data.name) || "オブジェクト"}`);
+    L.push("");
+    L.push("| 項目名 | 型 | 必須 |");
+    L.push("|---|---|---|");
+    if (fields.length === 0) {
+      L.push("| _（項目なし）_ | | |");
+    } else {
+      for (const f of fields) {
+        L.push(`| ${f.name || "(未設定)"} | ${f.type || "-"} | ${f.required ? "○" : ""} |`);
+      }
+    }
+  }
+  L.push("");
+  return L.join("\n");
+}
+
+export function exportBoardFieldSpec(board: Board) {
+  downloadText(`${safeFileName(board.title)}_項目定義書.md`, boardToFieldSpec(board), "text/markdown");
 }
 
 export function exportBoardMinutes(board: Board) {

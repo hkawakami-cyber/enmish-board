@@ -1,9 +1,12 @@
 "use client";
 
-import { Trash2, Copy, Info, EyeOff } from "lucide-react";
+import { Trash2, Copy, Info, EyeOff, Plus, X } from "lucide-react";
 import { useBoardStore } from "@/stores/boardStore";
 import { COLOR_LIST, FRAME_COLORS } from "@/lib/colors";
 import { CATEGORIES, getCategory } from "@/lib/categories";
+import type { ObjectField } from "@/types/board";
+
+const FIELD_TYPES = ["テキスト", "数値", "日付", "選択リスト", "チェックボックス", "参照関係", "主従関係", "数式"];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -25,6 +28,8 @@ const TYPE_LABEL: Record<string, string> = {
   task: "タスク",
   decision: "分岐",
   terminal: "開始/終了",
+  system: "システム",
+  object: "オブジェクト",
   frame: "フレーム",
 };
 
@@ -128,15 +133,74 @@ export default function RightPanel() {
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {/* タイトル / 名前 */}
-        {(type === "sticky" || type === "process" || type === "task" || type === "frame" || type === "decision" || type === "terminal") && (
-          <Field label={type === "decision" ? "条件" : type === "terminal" ? "ラベル" : "タイトル"}>
+        {(type === "sticky" || type === "process" || type === "task" || type === "frame" || type === "decision" || type === "terminal" || type === "system") && (
+          <Field label={type === "decision" ? "条件" : type === "terminal" ? "ラベル" : type === "system" ? "システム名" : "タイトル"}>
             <input className={inputCls} value={val("title")} onChange={(e) => set("title", e.target.value)} />
           </Field>
         )}
-        {type === "kpi" && (
-          <Field label="指標名">
+        {(type === "kpi" || type === "object") && (
+          <Field label={type === "object" ? "オブジェクト名" : "指標名"}>
             <input className={inputCls} value={val("name")} onChange={(e) => set("name", e.target.value)} />
           </Field>
+        )}
+
+        {/* システム：役割 */}
+        {type === "system" && (
+          <Field label="役割・補足">
+            <input className={inputCls} value={val("subtitle")} onChange={(e) => set("subtitle", e.target.value)} placeholder="例：顧客管理 / MA / 基幹" />
+          </Field>
+        )}
+
+        {/* オブジェクト：項目一覧 */}
+        {type === "object" && (
+          <div>
+            <span className="mb-1 block text-xs font-medium text-slate-500">項目</span>
+            <div className="space-y-1.5">
+              {((data.fields as ObjectField[]) ?? []).map((f, i) => {
+                const fields = [...((data.fields as ObjectField[]) ?? [])];
+                const patch = (p: Partial<ObjectField>) => {
+                  fields[i] = { ...fields[i], ...p };
+                  update(node.id, { fields });
+                };
+                const remove = () => {
+                  update(node.id, { fields: fields.filter((_, idx) => idx !== i) });
+                };
+                return (
+                  <div key={i} className="flex items-center gap-1">
+                    <input
+                      className="w-full rounded-md border border-border px-2 py-1 text-xs"
+                      value={f.name}
+                      placeholder="項目名"
+                      onChange={(e) => patch({ name: e.target.value })}
+                    />
+                    <select
+                      className="rounded-md border border-border px-1 py-1 text-xs"
+                      value={f.type}
+                      onChange={(e) => patch({ type: e.target.value })}
+                    >
+                      {FIELD_TYPES.map((t) => <option key={t}>{t}</option>)}
+                    </select>
+                    <button
+                      onClick={() => patch({ required: !f.required })}
+                      className={`rounded px-1.5 py-1 text-[10px] font-bold ${f.required ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-400"}`}
+                      title="必須"
+                    >
+                      必須
+                    </button>
+                    <button onClick={remove} className="rounded p-1 text-slate-300 hover:text-red-500" title="削除">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              onClick={() => update(node.id, { fields: [...((data.fields as ObjectField[]) ?? []), { name: "", type: "テキスト", required: false }] })}
+              className="mt-2 flex items-center gap-1 rounded-md border border-dashed border-border px-2 py-1 text-xs text-slate-500 hover:bg-slate-50"
+            >
+              <Plus className="h-3.5 w-3.5" /> 項目を追加
+            </button>
+          </div>
         )}
 
         {/* 本文 */}

@@ -11,6 +11,8 @@ import {
   LayoutTemplate,
   Diamond,
   Circle,
+  Server,
+  Database,
 } from "lucide-react";
 import type { NodeType } from "@/types/board";
 import { useBoardStore, insertTemplateNodes } from "@/stores/boardStore";
@@ -34,10 +36,12 @@ const TOOLS: ToolItem[] = [
   { type: "frame", label: "フレーム", key: "F", icon: <FrameIcon className="h-5 w-5" /> },
 ];
 
-// フロー図向けの図解ノード
+// フロー図・システム/データ整理向けの図解ノード
 const FLOW_TOOLS: ToolItem[] = [
   { type: "decision", label: "分岐", key: "D", icon: <Diamond className="h-5 w-5" /> },
   { type: "terminal", label: "開始終了", key: "O", icon: <Circle className="h-5 w-5" /> },
+  { type: "system", label: "システム", key: "S", icon: <Server className="h-5 w-5" /> },
+  { type: "object", label: "オブジェクト", key: "B", icon: <Database className="h-5 w-5" /> },
 ];
 
 export default function Sidebar() {

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { X, FileJson, FileText, Image as ImageIcon, ClipboardList, FileSignature } from "lucide-react";
+import { X, FileJson, FileText, Image as ImageIcon, ClipboardList, FileSignature, Table } from "lucide-react";
 import { useBoardStore } from "@/stores/boardStore";
 import { exportBoardJson } from "@/lib/exportJson";
 import { exportBoardMarkdown } from "@/lib/exportMarkdown";
-import { exportBoardMinutes, exportBoardProposal } from "@/lib/exportDocs";
+import { exportBoardMinutes, exportBoardProposal, exportBoardFieldSpec } from "@/lib/exportDocs";
 import { exportBoardImage } from "@/lib/exportImage";
 
 export default function ExportModal({ onClose }: { onClose: () => void }) {
@@ -35,6 +35,11 @@ export default function ExportModal({ onClose }: { onClose: () => void }) {
     onClose();
   };
 
+  const handleFieldSpec = () => {
+    exportBoardFieldSpec(serialize());
+    onClose();
+  };
+
   const handlePng = async () => {
     setError(null);
     setBusy("png");
@@ -51,6 +56,7 @@ export default function ExportModal({ onClose }: { onClose: () => void }) {
   const items = [
     { id: "minutes", icon: <ClipboardList className="h-6 w-6" />, label: "議事録", desc: "分類をもとに確認事項・未決・宿題を構造化。", onClick: handleMinutes },
     { id: "proposal", icon: <FileSignature className="h-6 w-6" />, label: "提案骨子", desc: "現状・課題・解決方針…の章立てを生成（内部メモは除外）。", onClick: handleProposal },
+    { id: "fieldspec", icon: <Table className="h-6 w-6" />, label: "項目定義書", desc: "オブジェクトの項目を表に（Salesforce/SIer）。", onClick: handleFieldSpec },
     { id: "md", icon: <FileText className="h-6 w-6" />, label: "Markdown（ボード全体）", desc: "フレーム単位でそのまま書き出し。", onClick: handleMarkdown },
     { id: "json", icon: <FileJson className="h-6 w-6" />, label: "JSON", desc: "ボード全体のデータ。バックアップや再取り込みに。", onClick: handleJson },
     { id: "png", icon: <ImageIcon className="h-6 w-6" />, label: "PNG画像", desc: "キャンバス全体を画像として書き出し。", onClick: handlePng },
