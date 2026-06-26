@@ -37,6 +37,8 @@ export default function RightPanel() {
   const node = useBoardStore((s) => s.nodes.find((n) => n.id === s.selectedId));
   const update = useBoardStore((s) => s.updateNodeData);
   const setColor = useBoardStore((s) => s.setNodeColor);
+  const addChildNode = useBoardStore((s) => s.addChildNode);
+  const addSiblingNode = useBoardStore((s) => s.addSiblingNode);
   const del = useBoardStore((s) => s.deleteSelected);
   const dup = useBoardStore((s) => s.duplicateSelected);
   const selectedEdgeId = useBoardStore((s) => s.selectedEdgeId);
@@ -132,6 +134,26 @@ export default function RightPanel() {
       </div>
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
+        {/* マインドマップ：子・兄弟を追加（Tab / Enter と同じ） */}
+        {type !== "frame" && (
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => addChildNode(node.id)}
+              className="rounded-md border border-border px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              title="子ノードを追加（Tab）"
+            >
+              ＋ 子を追加
+            </button>
+            <button
+              onClick={() => addSiblingNode(node.id)}
+              className="rounded-md border border-border px-2 py-1.5 text-xs font-medium text-slate-700 hover:bg-slate-50"
+              title="兄弟ノードを追加（Enter）"
+            >
+              ＋ 兄弟を追加
+            </button>
+          </div>
+        )}
+
         {/* タイトル / 名前 */}
         {(type === "sticky" || type === "process" || type === "task" || type === "frame" || type === "decision" || type === "terminal" || type === "system") && (
           <Field label={type === "decision" ? "条件" : type === "terminal" ? "ラベル" : type === "system" ? "システム名" : "タイトル"}>
