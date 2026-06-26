@@ -23,18 +23,62 @@ const TYPE_LABEL: Record<string, string> = {
   process: "プロセス",
   kpi: "KPI",
   task: "タスク",
+  decision: "分岐",
+  terminal: "開始/終了",
   frame: "フレーム",
 };
 
 export default function RightPanel() {
-  const selectedId = useBoardStore((s) => s.selectedId);
   const node = useBoardStore((s) => s.nodes.find((n) => n.id === s.selectedId));
   const update = useBoardStore((s) => s.updateNodeData);
   const setColor = useBoardStore((s) => s.setNodeColor);
   const del = useBoardStore((s) => s.deleteSelected);
   const dup = useBoardStore((s) => s.duplicateSelected);
+  const selectedEdgeId = useBoardStore((s) => s.selectedEdgeId);
+  const edge = useBoardStore((s) => s.edges.find((e) => e.id === s.selectedEdgeId));
+  const updateEdge = useBoardStore((s) => s.updateEdge);
+  const deleteEdge = useBoardStore((s) => s.deleteEdge);
 
-  if (!selectedId || !node) {
+  if (!node) {
+    // エッジ選択時はエッジ編集パネルを表示
+    if (selectedEdgeId && edge) {
+      const isArrow = Boolean(edge.markerEnd);
+      return (
+        <aside className="flex w-72 shrink-0 flex-col border-l border-border bg-panel">
+          <div className="flex items-center justify-between border-b border-border px-4 py-3">
+            <span className="text-sm font-bold text-slate-900">接続線の設定</span>
+            <button onClick={() => deleteEdge(edge.id)} className="rounded p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600" title="削除">
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="space-y-3 p-4">
+            <Field label="ラベル（はい / いいえ / 条件 など）">
+              <input
+                className={inputCls}
+                value={typeof edge.label === "string" ? edge.label : ""}
+                onChange={(e) => updateEdge(edge.id, { label: e.target.value })}
+                placeholder="例：はい / 商談化 / 承認"
+                autoFocus
+              />
+            </Field>
+            <Field label="種類">
+              <select
+                className={inputCls}
+                value={isArrow ? "arrow" : "line"}
+                onChange={(e) =>
+                  updateEdge(edge.id, {
+                    markerEnd: e.target.value === "arrow" ? ({ type: "arrowclosed" } as never) : undefined,
+                  })
+                }
+              >
+                <option value="arrow">矢印</option>
+                <option value="line">線</option>
+              </select>
+            </Field>
+          </div>
+        </aside>
+      );
+    }
     return (
       <aside className="w-72 shrink-0 border-l border-border bg-panel p-5">
         <div className="flex items-start gap-2 rounded-lg bg-slate-50 p-4 text-sm text-slate-500">
@@ -44,10 +88,10 @@ export default function RightPanel() {
             <ul className="mt-2 list-disc space-y-1 pl-4 text-xs leading-relaxed">
               <li>空白をダブルクリックで付箋を追加</li>
               <li>議事メモを ⌘V で貼ると行ごとに付箋化</li>
-              <li>カードをドラッグで移動</li>
-              <li>ダブルクリックでテキスト編集</li>
+              <li>カードをドラッグで移動 / 端から線をつなぐ</li>
+              <li>つないでから「図解に変換」で自動整列</li>
+              <li>接続線をクリックでラベル（はい/いいえ）編集</li>
               <li>右クリックで複製・削除・前面/背面</li>
-              <li>カードの端からドラッグで接続</li>
             </ul>
           </div>
         </div>
@@ -84,8 +128,8 @@ export default function RightPanel() {
 
       <div className="flex-1 space-y-3 overflow-y-auto p-4">
         {/* タイトル / 名前 */}
-        {(type === "sticky" || type === "process" || type === "task" || type === "frame") && (
-          <Field label="タイトル">
+        {(type === "sticky" || type === "process" || type === "task" || type === "frame" || type === "decision" || type === "terminal") && (
+          <Field label={type === "decision" ? "条件" : type === "terminal" ? "ラベル" : "タイトル"}>
             <input className={inputCls} value={val("title")} onChange={(e) => set("title", e.target.value)} />
           </Field>
         )}

@@ -21,6 +21,8 @@ import ProcessNode from "./nodes/ProcessNode";
 import KpiNode from "./nodes/KpiNode";
 import TaskNode from "./nodes/TaskNode";
 import FrameNode from "./nodes/FrameNode";
+import DecisionNode from "./nodes/DecisionNode";
+import TerminalNode from "./nodes/TerminalNode";
 import ContextMenu, { type MenuState } from "./ContextMenu";
 
 const nodeTypes: NodeTypes = {
@@ -29,6 +31,8 @@ const nodeTypes: NodeTypes = {
   process: ProcessNode,
   kpi: KpiNode,
   task: TaskNode,
+  decision: DecisionNode,
+  terminal: TerminalNode,
   frame: FrameNode,
 };
 
@@ -39,6 +43,8 @@ const MINIMAP_COLOR: Record<string, string> = {
   process: "#60a5fa",
   text: "#e2e8f0",
   sticky: "#fde047",
+  decision: "#fde047",
+  terminal: "#94a3b8",
 };
 
 export default function BoardCanvas() {

@@ -1,7 +1,14 @@
 // Enmish ボード - 中核データ型定義
 // 将来 Supabase / Firebase / PostgreSQL へ移行できるよう、保存形式は汎用的に保つ。
 
-export type NodeType = "sticky" | "text" | "process" | "kpi" | "task";
+export type NodeType =
+  | "sticky"
+  | "text"
+  | "process"
+  | "kpi"
+  | "task"
+  | "decision"
+  | "terminal";
 
 export type TaskStatus = "未着手" | "進行中" | "完了" | "保留";
 export type Priority = "高" | "中" | "低";

@@ -26,6 +26,8 @@ function nodeText(n: BoardNode): string {
       body = [str(d.name), [str(d.value), str(d.unit)].filter(Boolean).join("")].filter(Boolean).join("：");
       break;
     case "task":
+    case "decision":
+    case "terminal":
       body = str(d.title);
       break;
   }

@@ -15,6 +15,8 @@ const ADD_KEYS: Record<string, NodeType | "frame"> = {
   k: "kpi",
   a: "task",
   f: "frame",
+  d: "decision",
+  o: "terminal",
 };
 
 function isTyping(target: EventTarget | null) {

@@ -9,6 +9,8 @@ import {
   CheckSquare,
   Frame as FrameIcon,
   LayoutTemplate,
+  Diamond,
+  Circle,
 } from "lucide-react";
 import type { NodeType } from "@/types/board";
 import { useBoardStore, insertTemplateNodes } from "@/stores/boardStore";
@@ -32,6 +34,12 @@ const TOOLS: ToolItem[] = [
   { type: "frame", label: "フレーム", key: "F", icon: <FrameIcon className="h-5 w-5" /> },
 ];
 
+// フロー図向けの図解ノード
+const FLOW_TOOLS: ToolItem[] = [
+  { type: "decision", label: "分岐", key: "D", icon: <Diamond className="h-5 w-5" /> },
+  { type: "terminal", label: "開始終了", key: "O", icon: <Circle className="h-5 w-5" /> },
+];
+
 export default function Sidebar() {
   const addNode = useBoardStore((s) => s.addNode);
   const addFrame = useBoardStore((s) => s.addFrame);
@@ -52,6 +60,20 @@ export default function Sidebar() {
   return (
     <aside className="flex w-20 flex-col items-center gap-1 border-r border-border bg-panel py-3">
       {TOOLS.map((t) => (
+        <button
+          key={t.type}
+          onClick={() => handleAdd(t.type)}
+          className="group flex w-16 flex-col items-center gap-1 rounded-lg py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          title={`${t.label}を追加（${t.key}）`}
+        >
+          {t.icon}
+          <span className="text-[11px] font-medium">{t.label}</span>
+        </button>
+      ))}
+
+      <div className="my-1 h-px w-12 bg-border" />
+
+      {FLOW_TOOLS.map((t) => (
         <button
           key={t.type}
           onClick={() => handleAdd(t.type)}

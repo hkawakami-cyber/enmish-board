@@ -33,6 +33,8 @@ const DEFAULT_SIZE: Record<string, { width: number; height: number }> = {
   process: { width: 220, height: 160 },
   kpi: { width: 210, height: 140 },
   task: { width: 220, height: 160 },
+  decision: { width: 170, height: 110 },
+  terminal: { width: 150, height: 56 },
   frame: { width: 380, height: 260 },
 };
 
@@ -42,6 +44,8 @@ const DEFAULT_COLOR: Record<string, string> = {
   process: "blue",
   kpi: "green",
   task: "purple",
+  decision: "yellow",
+  terminal: "gray",
 };
 
 function defaultData(type: NodeType): Record<string, unknown> {
@@ -56,6 +60,10 @@ function defaultData(type: NodeType): Record<string, unknown> {
       return { name: "KPI", value: "", unit: "", formula: "", description: "" };
     case "task":
       return { title: "タスク", assignee: "", dueDate: "", status: "未着手", priority: "中", memo: "" };
+    case "decision":
+      return { title: "分岐？" };
+    case "terminal":
+      return { title: "開始" };
   }
 }
 
@@ -161,6 +169,7 @@ interface BoardState {
   nodes: Node[];
   edges: Edge[];
   selectedId: string | null;
+  selectedEdgeId: string | null;
 
   /** 作成直後に本文編集へ入らせるためのノードID */
   autoEditId: string | null;
@@ -186,6 +195,10 @@ interface BoardState {
 
   // 選択
   setSelected: (id: string | null) => void;
+
+  // エッジ操作
+  updateEdge: (id: string, patch: Partial<Edge>) => void;
+  deleteEdge: (id: string) => void;
 
   // ノード操作
   addNode: (type: NodeType, position: { x: number; y: number }) => void;
@@ -235,6 +248,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   nodes: [],
   edges: [],
   selectedId: null,
+  selectedEdgeId: null,
   autoEditId: null,
   clientMode: false,
 
@@ -257,6 +271,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       nodes: [...frameNodes, ...cardNodes],
       edges: board.edges.map(edgeToRf),
       selectedId: null,
+      selectedEdgeId: null,
       autoEditId: null,
       clientMode: false,
       dirty: false,
@@ -293,15 +308,38 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   onNodesChange: (changes) => {
     set({ nodes: applyNodeChanges(changes, get().nodes), dirty: true });
-    // 選択状態を同期
+    // 選択状態を同期（ノード選択時はエッジ選択を解除）
     const sel = changes.find((c) => c.type === "select");
     if (sel && "selected" in sel) {
-      set({ selectedId: sel.selected ? sel.id : get().selectedId === sel.id ? null : get().selectedId });
+      if (sel.selected) set({ selectedId: sel.id, selectedEdgeId: null });
+      else if (get().selectedId === sel.id) set({ selectedId: null });
     }
   },
 
   onEdgesChange: (changes) => {
     set({ edges: applyEdgeChanges(changes, get().edges), dirty: true });
+    const sel = changes.find((c) => c.type === "select");
+    if (sel && "selected" in sel) {
+      if (sel.selected) set({ selectedEdgeId: sel.id, selectedId: null });
+      else if (get().selectedEdgeId === sel.id) set({ selectedEdgeId: null });
+    }
+  },
+
+  updateEdge: (id, patch) => {
+    get().beginInteraction();
+    set({
+      edges: get().edges.map((e) => (e.id === id ? { ...e, ...patch } : e)),
+      dirty: true,
+    });
+  },
+
+  deleteEdge: (id) => {
+    get().beginInteraction();
+    set({
+      edges: get().edges.filter((e) => e.id !== id),
+      selectedEdgeId: get().selectedEdgeId === id ? null : get().selectedEdgeId,
+      dirty: true,
+    });
   },
 
   onConnect: (c) => {
@@ -315,7 +353,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     });
   },
 
-  setSelected: (id) => set({ selectedId: id }),
+  setSelected: (id) => set({ selectedId: id, selectedEdgeId: id ? get().selectedEdgeId : null }),
 
   addNode: (type, position) => {
     get().beginInteraction();
