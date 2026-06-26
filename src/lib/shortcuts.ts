@@ -62,6 +62,25 @@ export function useShortcuts() {
 
       if (mod) return; // 他の Cmd 系は無視
 
+      // マインドマップ：選択ノードから Tab で子、Enter で兄弟、c で折りたたみ
+      if (s.selectedId) {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          s.addChildNode(s.selectedId);
+          return;
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          s.addSiblingNode(s.selectedId);
+          return;
+        }
+        if (e.key.toLowerCase() === "c") {
+          e.preventDefault();
+          s.toggleCollapse(s.selectedId);
+          return;
+        }
+      }
+
       // 削除
       if (e.key === "Delete" || e.key === "Backspace") {
         if (s.selectedId) {

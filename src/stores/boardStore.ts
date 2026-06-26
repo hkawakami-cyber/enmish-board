@@ -237,6 +237,11 @@ interface BoardState {
   copySelected: () => void;
   pasteClipboard: () => void;
 
+  // マインドマップ操作
+  addChildNode: (parentId: string) => void;
+  addSiblingNode: (nodeId: string) => void;
+  toggleCollapse: (nodeId: string) => void;
+
   // 履歴
   beginInteraction: () => void;
   undo: () => void;
@@ -578,6 +583,68 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), ...created],
       selectedId: created.length === 1 ? created[0].id : null,
+      dirty: true,
+    });
+  },
+
+  addChildNode: (parentId) => {
+    const parent = get().nodes.find((n) => n.id === parentId);
+    if (!parent) return;
+    get().beginInteraction();
+    const childCount = get().edges.filter((e) => e.source === parentId).length;
+    const pw = parent.width ?? 200;
+    const ph = parent.height ?? 130;
+    const id = crypto.randomUUID();
+    const node: Node = {
+      id,
+      type: "sticky",
+      position: { x: parent.position.x + pw + 90, y: parent.position.y + childCount * (ph + 24) },
+      width: 200,
+      height: 120,
+      data: { title: "", body: "", color: "yellow", createdAt: new Date().toISOString() },
+      zIndex: 1,
+      selected: true,
+    };
+    const edge: Edge = { id: crypto.randomUUID(), source: parentId, target: id, type: "default" };
+    set({
+      nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), node],
+      edges: [...get().edges, edge],
+      selectedId: id,
+      autoEditId: id,
+      dirty: true,
+    });
+  },
+
+  addSiblingNode: (nodeId) => {
+    const parentEdge = get().edges.find((e) => e.target === nodeId);
+    get().addChildNode(parentEdge ? parentEdge.source : nodeId);
+  },
+
+  toggleCollapse: (nodeId) => {
+    const node = get().nodes.find((n) => n.id === nodeId);
+    if (!node) return;
+    // 子孫を BFS で収集（source → target をたどる）
+    const childrenOf = (id: string) => get().edges.filter((e) => e.source === id).map((e) => e.target);
+    const descendants = new Set<string>();
+    const queue = [...childrenOf(nodeId)];
+    while (queue.length) {
+      const cur = queue.shift()!;
+      if (descendants.has(cur)) continue;
+      descendants.add(cur);
+      queue.push(...childrenOf(cur));
+    }
+    if (descendants.size === 0) return;
+    get().beginInteraction();
+    const collapsed = !node.data.collapsed;
+    set({
+      nodes: get().nodes.map((n) => {
+        if (n.id === nodeId) return { ...n, data: { ...n.data, collapsed } };
+        if (descendants.has(n.id)) return { ...n, hidden: collapsed };
+        return n;
+      }),
+      edges: get().edges.map((e) =>
+        descendants.has(e.target) ? { ...e, hidden: collapsed } : e,
+      ),
       dirty: true,
     });
   },

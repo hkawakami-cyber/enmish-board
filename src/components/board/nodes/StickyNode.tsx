@@ -9,11 +9,16 @@ export default function StickyNode({ id, data, selected }: NodeProps) {
   const fontSize = (data.fontSize as number) ?? 14;
   return (
     <div
-      className="group flex h-full w-full flex-col rounded-md p-3 shadow-sm"
+      className="group relative flex h-full w-full flex-col rounded-md p-3 shadow-sm"
       style={{ background: c.bg, border: `1px solid ${c.border}`, fontSize }}
     >
       <Resizer selected={selected} />
       <NodeHandles />
+      {Boolean(data.collapsed) && (
+        <span className="absolute -right-2 -top-2 rounded-full bg-slate-700 px-1.5 py-0.5 text-[10px] font-bold text-white shadow" title="折りたたみ中（c で展開）">
+          ＋
+        </span>
+      )}
       <NodeMeta data={data as Record<string, unknown>} />
       <EditableText
         nodeId={id}
