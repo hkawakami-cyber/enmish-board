@@ -72,6 +72,8 @@ interface EditableProps {
 export function EditableText({ nodeId, field, value, placeholder, className, multiline = true, primary }: EditableProps) {
   const update = useBoardStore((s) => s.updateNodeData);
   const begin = useBoardStore((s) => s.beginInteraction);
+  const addChild = useBoardStore((s) => s.addChildNode);
+  const addSibling = useBoardStore((s) => s.addSiblingNode);
   const autoEdit = useBoardStore((s) => primary && s.autoEditId === nodeId);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -103,9 +105,10 @@ export function EditableText({ nodeId, field, value, placeholder, className, mul
     setEditing(true);
   };
 
-  const commit = () => {
+  const commit = (after?: () => void) => {
     setEditing(false);
     if (draft !== value) update(nodeId, { [field]: draft });
+    after?.();
   };
 
   if (editing) {
@@ -114,17 +117,30 @@ export function EditableText({ nodeId, field, value, placeholder, className, mul
         ref={ref}
         value={draft}
         onChange={(e) => setDraft(e.target.value)}
-        onBlur={commit}
+        onBlur={() => commit()}
         onKeyDown={(e) => {
+          e.stopPropagation();
           if (e.key === "Escape") {
             setDraft(value);
             setEditing(false);
+            return;
+          }
+          // 主テキストはマインドマップ操作も兼ねる：
+          //   Tab=確定して子を追加 / Enter=確定して兄弟を追加（Shift+Enterで改行）
+          if (primary && e.key === "Tab") {
+            e.preventDefault();
+            commit(() => addChild(nodeId));
+            return;
+          }
+          if (primary && e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            commit(() => addSibling(nodeId));
+            return;
           }
           if (e.key === "Enter" && !multiline) {
             e.preventDefault();
             commit();
           }
-          e.stopPropagation();
         }}
         className={`nodrag w-full resize-none rounded bg-white/70 px-1 py-0.5 outline-none ring-1 ring-slate-300 ${className ?? ""}`}
         rows={multiline ? 3 : 1}

@@ -151,6 +151,9 @@ export default function BoardCanvas() {
               <li className="flex items-center justify-center gap-1.5">
                 <StickyNote className="h-3.5 w-3.5" /> 左のツール、または <kbd className="rounded bg-slate-100 px-1.5">N</kbd>/<kbd className="rounded bg-slate-100 px-1.5">T</kbd>/<kbd className="rounded bg-slate-100 px-1.5">F</kbd> でも追加
               </li>
+              <li>
+                <span className="font-medium text-slate-600">マインドマップ：</span> 付箋を作って入力 → <kbd className="rounded bg-slate-100 px-1.5">Tab</kbd> で子・<kbd className="rounded bg-slate-100 px-1.5">Enter</kbd> で兄弟
+              </li>
               <li>議事メモを <kbd className="rounded bg-slate-100 px-1.5">⌘V</kbd> で貼ると、行ごとに付箋化</li>
               <li>カードの端からドラッグで線をつなげる</li>
             </ul>
