@@ -9,7 +9,7 @@ export default function TextNode({ id, data, selected }: NodeProps) {
   const fontSize = (data.fontSize as number) ?? 14;
   return (
     <div
-      className="group flex h-full w-full flex-col rounded-md p-3"
+      className="group flex h-full w-full flex-col rounded-xl p-3 shadow-[0_4px_14px_rgba(20,30,60,0.06)]"
       style={{ background: c.bg, border: `1px solid ${c.border}`, fontSize }}
     >
       <Resizer selected={selected} minHeight={60} />

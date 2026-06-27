@@ -67,7 +67,7 @@ export default function Toolbar() {
       <Link href="/boards" className={iconBtn} title="ボード一覧へ戻る">
         <ChevronLeft className="h-5 w-5" />
       </Link>
-      <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-900 text-white">
+      <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 text-white shadow-sm">
         <LayoutGrid className="h-4 w-4" />
       </span>
 

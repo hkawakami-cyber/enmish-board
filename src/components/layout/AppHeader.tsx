@@ -8,7 +8,7 @@ export default function AppHeader() {
     <header className="sticky top-0 z-20 border-b border-border bg-panel/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-6">
         <Link href="/" className="flex items-center gap-2 font-bold text-slate-900">
-          <span className="flex h-7 w-7 items-center justify-center rounded-md bg-slate-900 text-white">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 text-white shadow-sm">
             <LayoutGrid className="h-4 w-4" />
           </span>
           Enmish ボード

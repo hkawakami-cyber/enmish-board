@@ -45,12 +45,51 @@ body {
 
 /* React Flow のエッジ/ハンドルを業務向けに控えめにする */
 .react-flow__edge-path {
-  stroke: #64748b;
-  stroke-width: 1.5;
+  stroke: #94a3b8;
+  stroke-width: 1.75;
+}
+.react-flow__edge.selected .react-flow__edge-path,
+.react-flow__edge:hover .react-flow__edge-path {
+  stroke: #6366f1;
+  stroke-width: 2.5;
+}
+.react-flow__connection-path {
+  stroke: #6366f1;
+  stroke-width: 2;
 }
 .react-flow__handle {
   width: 9px;
   height: 9px;
-  background: #475569;
+  background: #6366f1;
   border: 1.5px solid #ffffff;
+}
+
+/* 選択ノードを上品なリングで強調 */
+.react-flow__node.selected {
+  outline: 2px solid #6366f1;
+  outline-offset: 3px;
+  border-radius: 16px;
+}
+
+/* コントロール / ミニマップを丸く・浮かせる */
+.react-flow__controls {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(20, 30, 60, 0.12);
+}
+.react-flow__controls-button {
+  border: none;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+  color: #475569;
+}
+.react-flow__controls-button:hover {
+  background: #f8fafc;
+}
+.react-flow__minimap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(20, 30, 60, 0.12);
 }

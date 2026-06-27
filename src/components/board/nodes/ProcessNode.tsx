@@ -18,7 +18,7 @@ export default function ProcessNode({ id, data, selected }: NodeProps) {
   const c = resolveColor((data.color as string) ?? "blue");
   return (
     <div
-      className="group flex h-full w-full flex-col overflow-hidden rounded-md shadow-sm"
+      className="group flex h-full w-full flex-col overflow-hidden rounded-xl shadow-[0_4px_14px_rgba(20,30,60,0.08)]"
       style={{ background: "#ffffff", border: `1px solid ${c.border}` }}
     >
       <Resizer selected={selected} />

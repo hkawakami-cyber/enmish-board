@@ -9,7 +9,7 @@ export default function StickyNode({ id, data, selected }: NodeProps) {
   const fontSize = (data.fontSize as number) ?? 14;
   return (
     <div
-      className="group relative flex h-full w-full flex-col rounded-md p-3 shadow-sm"
+      className="group relative flex h-full w-full flex-col rounded-xl p-3 shadow-[0_4px_14px_rgba(20,30,60,0.08)]"
       style={{ background: c.bg, border: `1px solid ${c.border}`, fontSize }}
     >
       <Resizer selected={selected} />

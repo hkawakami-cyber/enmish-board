@@ -35,7 +35,9 @@ export default function HomePage() {
       <section className="border-b border-border bg-panel">
         <div className="mx-auto max-w-5xl px-6 py-16">
           <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
-            <LayoutGrid className="h-4 w-4" />
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-gradient-to-br from-blue-500 to-violet-500 text-white">
+              <LayoutGrid className="h-3.5 w-3.5" />
+            </span>
             Enmish シリーズ
           </div>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
@@ -52,7 +54,7 @@ export default function HomePage() {
           <div className="mt-8 flex flex-wrap gap-3">
             <button
               onClick={handleNewBlank}
-              className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800"
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
             >
               <Plus className="h-4 w-4" />
               新規ボード作成

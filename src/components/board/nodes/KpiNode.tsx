@@ -10,7 +10,7 @@ export default function KpiNode({ id, data, selected }: NodeProps) {
   const unit = (data.unit as string) ?? "";
   return (
     <div
-      className="group flex h-full w-full flex-col rounded-md p-3 shadow-sm"
+      className="group flex h-full w-full flex-col rounded-xl p-3 shadow-[0_4px_14px_rgba(20,30,60,0.08)]"
       style={{ background: c.bg, border: `1px solid ${c.border}` }}
     >
       <Resizer selected={selected} />

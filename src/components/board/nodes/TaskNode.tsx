@@ -26,7 +26,7 @@ export default function TaskNode({ id, data, selected }: NodeProps) {
   const dueDate = (data.dueDate as string) ?? "";
   return (
     <div
-      className="group flex h-full w-full flex-col rounded-md bg-white p-3 shadow-sm"
+      className="group flex h-full w-full flex-col rounded-xl bg-white p-3 shadow-[0_4px_14px_rgba(20,30,60,0.08)]"
       style={{ border: `1px solid ${c.border}`, borderLeft: `4px solid ${c.swatch}` }}
     >
       <Resizer selected={selected} />

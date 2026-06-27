@@ -215,7 +215,7 @@ interface BoardState {
   deleteEdge: (id: string) => void;
 
   // ノード操作
-  addNode: (type: NodeType, position: { x: number; y: number }) => void;
+  addNode: (type: NodeType, position: { x: number; y: number }, data?: Record<string, unknown>) => void;
   addFrame: (position: { x: number; y: number }) => void;
   /** スイムレーン（隣接する縦レーンのフレーム群）を挿入する */
   addSwimlane: (lanes?: number) => void;
@@ -376,7 +376,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   setSelected: (id) => set({ selectedId: id, selectedEdgeId: id ? get().selectedEdgeId : null }),
 
-  addNode: (type, position) => {
+  addNode: (type, position, data) => {
     get().beginInteraction();
     const id = crypto.randomUUID();
     const node: Node = {
@@ -385,7 +385,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       position,
       width: DEFAULT_SIZE[type].width,
       height: DEFAULT_SIZE[type].height,
-      data: { ...defaultData(type), color: DEFAULT_COLOR[type], createdAt: new Date().toISOString() },
+      data: { ...defaultData(type), color: DEFAULT_COLOR[type], createdAt: new Date().toISOString(), ...data },
       zIndex: 1,
       selected: true,
     };
