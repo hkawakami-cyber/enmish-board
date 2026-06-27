@@ -66,7 +66,7 @@ export default function Sidebar() {
     else addNode(type, pos);
   };
 
-  const startMindmap = () => addNode("sticky", getAddPosition(), { title: "", body: "" });
+  const startMindmap = () => addNode("mind", getAddPosition(), { isRoot: true });
   const startFlow = () => addNode("terminal", getAddPosition(), { title: "開始" });
 
   const handleInsertTemplate = (templateId: string) => {

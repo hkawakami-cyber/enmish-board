@@ -37,6 +37,7 @@ const DEFAULT_SIZE: Record<string, { width: number; height: number }> = {
   terminal: { width: 150, height: 56 },
   system: { width: 200, height: 92 },
   object: { width: 230, height: 200 },
+  mind: { width: 200, height: 52 },
   frame: { width: 380, height: 260 },
 };
 
@@ -50,6 +51,7 @@ const DEFAULT_COLOR: Record<string, string> = {
   terminal: "gray",
   system: "blue",
   object: "purple",
+  mind: "purple",
 };
 
 function defaultData(type: NodeType): Record<string, unknown> {
@@ -78,6 +80,8 @@ function defaultData(type: NodeType): Record<string, unknown> {
           { name: "", type: "テキスト", required: false },
         ],
       };
+    case "mind":
+      return { title: "" };
   }
 }
 
@@ -594,18 +598,34 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const childCount = get().edges.filter((e) => e.source === parentId).length;
     const pw = parent.width ?? 200;
     const ph = parent.height ?? 130;
+    // 親と同じ種別の子を作る（マインドマップ→マインドマップ、付箋→付箋）
+    const childType = (parent.type === "frame" ? "sticky" : (parent.type as NodeType)) ?? "sticky";
+    const size = DEFAULT_SIZE[childType];
+    const isMind = childType === "mind";
     const id = crypto.randomUUID();
     const node: Node = {
       id,
-      type: "sticky",
-      position: { x: parent.position.x + pw + 90, y: parent.position.y + childCount * (ph + 24) },
-      width: 200,
-      height: 120,
-      data: { title: "", body: "", color: "yellow", createdAt: new Date().toISOString() },
+      type: childType,
+      position: { x: parent.position.x + pw + (isMind ? 70 : 90), y: parent.position.y + childCount * (ph + (isMind ? 16 : 24)) },
+      width: size.width,
+      height: size.height,
+      data: {
+        ...defaultData(childType),
+        ...(childType === "sticky" ? { title: "", body: "" } : {}),
+        color: DEFAULT_COLOR[childType],
+        createdAt: new Date().toISOString(),
+      },
       zIndex: 1,
       selected: true,
     };
-    const edge: Edge = { id: crypto.randomUUID(), source: parentId, target: id, type: "default" };
+    const edge: Edge = {
+      id: crypto.randomUUID(),
+      source: parentId,
+      target: id,
+      type: "default",
+      // マインドマップは矢印なしの淡い曲線
+      ...(isMind ? { markerEnd: undefined, style: { stroke: "#a5b4fc", strokeWidth: 2 } } : {}),
+    };
     set({
       nodes: [...get().nodes.map((n) => ({ ...n, selected: false })), node],
       edges: [...get().edges, edge],

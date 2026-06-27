@@ -29,6 +29,7 @@ function nodeText(n: BoardNode): string {
     case "decision":
     case "terminal":
     case "system":
+    case "mind":
       body = str(d.title);
       break;
     case "object":

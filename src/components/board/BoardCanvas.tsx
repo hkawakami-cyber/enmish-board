@@ -25,6 +25,7 @@ import DecisionNode from "./nodes/DecisionNode";
 import TerminalNode from "./nodes/TerminalNode";
 import SystemNode from "./nodes/SystemNode";
 import ObjectNode from "./nodes/ObjectNode";
+import MindNode from "./nodes/MindNode";
 import ContextMenu, { type MenuState } from "./ContextMenu";
 
 const nodeTypes: NodeTypes = {
@@ -37,6 +38,7 @@ const nodeTypes: NodeTypes = {
   terminal: TerminalNode,
   system: SystemNode,
   object: ObjectNode,
+  mind: MindNode,
   frame: FrameNode,
 };
 
@@ -51,6 +53,7 @@ const MINIMAP_COLOR: Record<string, string> = {
   terminal: "#94a3b8",
   system: "#60a5fa",
   object: "#a78bfa",
+  mind: "#a5b4fc",
 };
 
 export default function BoardCanvas() {

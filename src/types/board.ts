@@ -10,7 +10,8 @@ export type NodeType =
   | "decision"
   | "terminal"
   | "system"
-  | "object";
+  | "object"
+  | "mind";
 
 /** ER/オブジェクト図の項目 */
 export interface ObjectField {

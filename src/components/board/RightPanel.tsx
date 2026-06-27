@@ -30,6 +30,7 @@ const TYPE_LABEL: Record<string, string> = {
   terminal: "開始/終了",
   system: "システム",
   object: "オブジェクト",
+  mind: "マインドマップ",
   frame: "フレーム",
 };
 
@@ -155,8 +156,8 @@ export default function RightPanel() {
         )}
 
         {/* タイトル / 名前 */}
-        {(type === "sticky" || type === "process" || type === "task" || type === "frame" || type === "decision" || type === "terminal" || type === "system") && (
-          <Field label={type === "decision" ? "条件" : type === "terminal" ? "ラベル" : type === "system" ? "システム名" : "タイトル"}>
+        {(type === "sticky" || type === "process" || type === "task" || type === "frame" || type === "decision" || type === "terminal" || type === "system" || type === "mind") && (
+          <Field label={type === "decision" ? "条件" : type === "terminal" ? "ラベル" : type === "system" ? "システム名" : type === "mind" ? "テキスト" : "タイトル"}>
             <input className={inputCls} value={val("title")} onChange={(e) => set("title", e.target.value)} />
           </Field>
         )}

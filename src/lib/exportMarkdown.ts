@@ -50,6 +50,8 @@ function nodeToBullet(n: BoardNode): string {
       const tail = [val, str(d.formula) && `式: ${str(d.formula)}`].filter(Boolean).join(" / ");
       return `- **${str(d.name) || "KPI"}**${tail ? `: ${tail}` : ""}`;
     }
+    case "mind":
+      return `- ${str(d.title) || "(項目)"}`;
     case "decision":
       return `- ◇ ${str(d.title) || "分岐"}`;
     case "terminal":
