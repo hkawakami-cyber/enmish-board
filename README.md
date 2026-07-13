@@ -1,6 +1,6 @@
 # Enmish ボード
 
-**BtoB商談・要件定義・提案設計に特化した思考整理ボード。**
+BtoB商談・要件定義・提案設計に特化した思考整理ボード。
 
 MTG中の発言・論点・業務構造を、マインドマップ・ロジックツリー・フロー図に変換し、
 課題整理・要件定義・提案骨子・アクションまで一気通貫で落とし込めます。
@@ -13,19 +13,19 @@ Enmish シリーズの中では「設計・整理・可視化・合意形成」�
 ## 主な機能
 
 ### 入力（会議中のテンポを止めない）
-- **無限キャンバス編集**: ドラッグ・ズーム・ノード接続（React Flow）
-- **空白ダブルクリックで付箋**を即作成（作成直後に編集開始）
-- **テキスト貼り付け（⌘V）→ 行ごとに付箋へ自動分解**
-- **右クリックメニュー**（複製 / 前面・背面 / 削除 / 各カード追加）
-- **5 種類のカード**: 付箋 / テキスト / プロセス / KPI / タスク＋**フレーム**
+- 無限キャンバス編集: ドラッグ・ズーム・ノード接続（React Flow）
+- 空白ダブルクリックで付箋を即作成（作成直後に編集開始）
+- テキスト貼り付け（⌘V）→ 行ごとに付箋へ自動分解
+- 右クリックメニュー（複製 / 前面・背面 / 削除 / 各カード追加）
+- 5 種類のカード: 付箋 / テキスト / プロセス / KPI / タスク＋フレーム
 
 ### 構造化（MTGの収束）
-- **発言の分類**: 背景 / 現状 / 課題 / 要望 / 制約 / 決定事項 / 宿題 / 未決事項 / 提案論点（選ぶと色も自動適用）
-- **発言者**・**内部メモ**フラグ
-- **顧客共有モード**: 内部メモを隠して顧客にそのまま見せられる
+- 発言の分類: 背景 / 現状 / 課題 / 要望 / 制約 / 決定事項 / 宿題 / 未決事項 / 提案論点（選ぶと色も自動適用）
+- 発言者・内部メモフラグ
+- 顧客共有モード: 内部メモを隠して顧客にそのまま見せられる
 
 ### 図解への変換（オートレイアウト）
-- 付箋をエッジでつないで **マインドマップ / ロジックツリー / フロー図** に自動整列
+- 付箋をエッジでつないで マインドマップ / ロジックツリー / フロー図 に自動整列
 - 選択中ならその部分集合、未選択なら全体を整える
 
 ### テンプレート
@@ -35,8 +35,8 @@ Enmish シリーズの中では「設計・整理・可視化・合意形成」�
 - 共通（顧客ヒアリング / 課題・施策 / PoC / 定例 / 振り返り / 議事録）
 
 ### 出力
-- **議事録**（分類から確認事項・未決・宿題を構造化）
-- **提案骨子**（現状認識・課題・解決方針…の章立て、内部メモは除外）
+- 議事録（分類から確認事項・未決・宿題を構造化）
+- 提案骨子（現状認識・課題・解決方針…の章立て、内部メモは除外）
 - ボード全体 Markdown / JSON / PNG
 
 ### その他
@@ -45,24 +45,28 @@ Enmish シリーズの中では「設計・整理・可視化・合意形成」�
 
 ## 図解（ノード＋エッジで表現し、レイアウトだけ変える）
 
-- **図解に変換（オートレイアウト）**: つないだカードを マインドマップ / ロジックツリー / フロー図 に自動整列
-- **フロー図**: 分岐（判断）ノード・開始/終了ノード、接続線のラベル（はい/いいえ/条件）編集
-- **スイムレーン**: 部署/担当/システム別のレーンを挿入
-- **システム構成図**: システムノード＋連携線（API/CSV/手入力…）
-- **ER/オブジェクト図**: Salesforceオブジェクトの項目（名前・型・必須）を保持 → 項目定義書出力
+- 図解に変換（オートレイアウト）: つないだカードを マインドマップ / ロジックツリー / フロー図 に自動整列
+- フロー図: 分岐（判断）ノード・開始/終了ノード、接続線のラベル（はい/いいえ/条件）編集
+- スイムレーン: 部署/担当/システム別のレーンを挿入
+- システム構成図: システムノード＋連携線（API/CSV/手入力…）
+- ER/オブジェクト図: Salesforceオブジェクトの項目（名前・型・必須）を保持 → 項目定義書出力
 
 ## AI構造化（要 API キー）
 
 サーバーの環境変数 `ANTHROPIC_API_KEY` を設定すると、ツールバーの「AI」から以下が使えます（未設定時は「未接続」と案内）。
 
-- **付箋をAIで分類**（背景/現状/課題/要望/制約/決定事項/宿題/未決事項/提案論点に振り分け、色付け）
-- **議事録をAI生成** / **提案骨子をAI生成**
+- 付箋をAIで分類（背景/現状/課題/要望/制約/決定事項/宿題/未決事項/提案論点に振り分け、色付け）
+- 議事録をAI生成 / 提案骨子をAI生成
 
 モデルは既定 `claude-opus-4-8`（環境変数 `AI_MODEL` で変更可）。実装は `src/app/api/ai/route.ts`（公式 `@anthropic-ai/sdk` 使用）。
 
 ```bash
-ANTHROPIC_API_KEY=sk-ant-... npm run dev
+cp .env.example .env.local
+# .env.local に ANTHROPIC_API_KEY を設定
+npm run dev
 ```
+
+`ANTHROPIC_API_KEY` が未設定でもアプリ本体は起動し、AI操作時のみ未接続案内を表示します。
 
 ## ロードマップ（未実装）
 
@@ -73,12 +77,12 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 
 ## 技術スタック
 
-- [Next.js](https://nextjs.org/) (App Router) + TypeScript
+- Next.js 16 (App Router) + TypeScript
 - Tailwind CSS v4
-- [React Flow (@xyflow/react)](https://reactflow.dev/) — キャンバス
-- [Zustand](https://github.com/pmndrs/zustand) — 編集状態管理
-- [html-to-image](https://github.com/bubkoo/html-to-image) — PNG 出力
-- [lucide-react](https://lucide.dev/) — アイコン
+- React Flow (@xyflow/react) — キャンバス
+- Zustand — 編集状態管理
+- html-to-image — PNG 出力
+- lucide-react — アイコン
 
 ## 開発
 
@@ -89,6 +93,33 @@ npm run build    # 本番ビルド
 npm run lint     # ESLint
 ```
 
+## Netlifyで本番公開する
+
+本番URL: `https://dashboard.enmishtools.com`
+
+1. Netlifyで「Add new site」→「Import an existing project」を選択し、GitHubリポジトリ `hkawakami-cyber/enmish-board` を接続します。
+2. Production branchには、このリポジトリの正式ブランチを指定します。現時点のデフォルトブランチは `claude/enmish-board-spec-xs7p5v` です。
+3. Build commandは `npm run build` を使用します。Publish directoryは入力せず、NetlifyのNext.js自動検出に従います。
+4. `netlify.toml` によりNode.js 22を使用します。静的書き出しは行わず、SSR・Route Handler・`/api/ai` はNetlifyのNext.jsランタイムで処理します。
+5. AI機能を利用する場合のみ、Netlifyの Site configuration → Environment variables に `ANTHROPIC_API_KEY` を登録します。必要に応じて `AI_MODEL` も登録します。APIキーはGitへコミットしません。
+6. Deploysから本番デプロイを実行し、以下を確認します。
+   - `/` が表示される
+   - `/boards` が表示される
+   - ボードを作成し `/boards/<boardId>` が表示される
+   - 各URLを直接開く、またはリロードしても404にならない
+   - APIキー未設定時にAI操作で「AIは未接続です」と表示される
+   - APIキー設定時に分類・議事録・提案骨子生成が動作する
+7. Domain managementで `dashboard.enmishtools.com` を追加します。
+8. DNS管理側で、Netlifyが表示するCNAME値を `dashboard` サブドメインに設定します。DNS反映後、NetlifyのTLS証明書が発行され、HTTPSで利用できます。
+
+デプロイ前の確認:
+
+```bash
+npm install
+npm run lint
+npm run build
+```
+
 ## ディレクトリ構成
 
 ```
@@ -97,27 +128,28 @@ src/
     page.tsx                  # ホーム画面
     boards/page.tsx           # ボード一覧
     boards/[boardId]/page.tsx # ボード編集画面
+    api/ai/route.ts           # Anthropic API Route Handler
   components/
     layout/AppHeader.tsx
     board/
-      BoardCanvas.tsx         # React Flow ラッパー
-      Sidebar.tsx             # 左：カード追加ツール
-      Toolbar.tsx             # 上：保存 / Undo / ズーム / エクスポート
-      RightPanel.tsx          # 右：選択カードの詳細設定
-      TemplateModal.tsx       # テンプレート選択
-      ExportModal.tsx         # エクスポート
-      nodes/                  # 各カードの描画 (Sticky/Text/Process/Kpi/Task/Frame)
-  stores/boardStore.ts        # Zustand ストア（編集の単一の真実）
-  types/board.ts              # Board / BoardNode / BoardEdge / BoardFrame 型
+      BoardCanvas.tsx
+      Sidebar.tsx
+      Toolbar.tsx
+      RightPanel.tsx
+      TemplateModal.tsx
+      ExportModal.tsx
+      nodes/
+  stores/boardStore.ts
+  types/board.ts
   lib/
-    storage.ts                # localStorage 読み書き
-    boardActions.ts           # ボード新規作成（空 / テンプレート）
-    templates.ts              # テンプレート定義
-    exportJson.ts             # JSON 出力
-    exportMarkdown.ts         # Markdown 出力
-    exportImage.ts            # PNG 出力
-    colors.ts                 # カラーパレット
-    shortcuts.ts              # キーボードショートカット
+    storage.ts
+    boardActions.ts
+    templates.ts
+    exportJson.ts
+    exportMarkdown.ts
+    exportImage.ts
+    colors.ts
+    shortcuts.ts
 ```
 
 ## データ設計
