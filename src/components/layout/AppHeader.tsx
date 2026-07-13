@@ -11,7 +11,7 @@ export default function AppHeader() {
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-violet-500 text-white shadow-sm">
             <LayoutGrid className="h-4 w-4" />
           </span>
-          Enmish ボード
+          Enmish ダッシュボード
         </Link>
         <span className="hidden text-sm text-slate-400 sm:inline">
           営業・業務・会議を一枚で構造化する
