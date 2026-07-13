@@ -41,7 +41,7 @@ export default function HomePage() {
             Enmish シリーズ
           </div>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-            Enmish ボード
+            Enmish ダッシュボード
           </h1>
           <p className="mt-4 text-xl font-semibold text-slate-700">
             営業・業務・会議を一枚で構造化する

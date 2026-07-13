@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Enmish ボード",
+  title: "Enmish ダッシュボード",
   description: "営業・業務・会議を一枚で構造化する",
 };
 
